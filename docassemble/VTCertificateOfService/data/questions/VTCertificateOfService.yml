@@ -1,3 +1,9 @@
+#I don't know why I have to include the courts list in this package when it is already on the VTSharedYMLFile.yml.
+#Need to get court county to show
+#Need to get checkboxes to be checked on PDF
+#Need to offer names of divorce documents that a person might check off. Then, give them option to write in others
+#Preview your form screen doesn't show
+#Need to collect and show signature date
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -83,12 +89,14 @@ code: |
   trial_court_division
   set_progress(20)
   users.gather()
+  user_has_lawyer
   set_parts(subtitle=str(users))
-  other_parties[0].name
+  other_parties[0].name.last
   set_progress(40)
   document1_name
   people_receiving_service.gather()
-  signature_date
+  al_form_requires_digital_signature = False
+  basic_questions_signature_flow 
   interview_order_VTCertificateOfService = True
 ---
 ###################### Main order ######################
@@ -100,7 +108,6 @@ code: |
   al_intro_screen
   VTCertificateOfService_intro
   interview_order_VTCertificateOfService
-  signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -149,6 +156,37 @@ fields:
 
   - County: trial_court_index
     code: all_courts._load_courts()['address_county'].items()
+---
+id: does user have a lawyer
+question: |
+  Do you have a lawyer working with you on this case?
+fields:
+  - no label: user_has_lawyer
+    datatype: yesnoradio
+  - "Your lawyer's name": users1_attorneys_name
+    maxlength: 38
+    show if: user_has_lawyer
+---
+---
+id: gather defendant name
+sets:
+  - other_parties[0].name.first
+  - other_parties[0].name.last
+question: |
+  Name of the other party
+fields:
+  - First Name: other_parties[0].name.first
+  - Middle Name: other_parties[0].name.middle
+    required: False
+  - Last Name: other_parties[0].name.last
+  - Suffix: other_parties[0].name.suffix
+    choices: 
+      - Jr
+      - Sr
+      - I
+      - II
+      - III
+    required: False
 ---
 id: Documents you are sending to the other party
 question: |
@@ -203,8 +241,6 @@ fields:
 #    maxlength: 20
 #  - "Other parties1 address address": Other_parties1_address_address
 #    maxlength: 39
-#  - "Users1 attorneys name": users1_attorneys_name
-#    maxlength: 38
 ---
 id: preview VTCertificateOfService
 question: |
