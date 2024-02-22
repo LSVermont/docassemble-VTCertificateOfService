@@ -1,0 +1,397 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.ALToolbox:phone-number-validation.yml
+  - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
+---
+metadata:
+  title: >-
+    Certificate of Service
+  short title: >-
+    Certificate of Service
+  description: |-
+    This interview helps someone in Vermont fill out a Certificate of Service court form.
+  tags:
+    - "FA-06-00-00-00"
+  authors:
+    - Legal Services Vermont
+  original_form:
+    - https://vtlawhelp.org/roadmap/divorce/step-3
+  help_page_url: >-
+    https://vtlawhelp.org/roadmap/divorce/step-3
+  help_page_title: >-
+    Divorce Roadmap on VTLawHelp.org
+  allowed_courts: []
+  typical_role: "plaintiff"
+  al_weaver_version: "1.10.3"
+  generated_on: "2024-02-22"
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "VT"
+---
+code: |
+  github_repo_name =  'docassemble-Vtcertificateofservice'
+---
+code: |
+  interview_short_title = "Fill out a Certificate of Service form in Vermont"
+---
+code: |
+  al_form_type = "existing_case" 
+---
+objects:
+  - users1_attorneys: ALPeopleList.using(there_are_any=True)
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - document: ALPeopleList.using(there_are_any=True)
+---
+# customized feedback form
+code: |   
+  feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
+---
+objects:
+  - all_courts: ALCourtLoader.using(file_name='courts_list.xlsx')
+---
+code: |
+  trial_court = all_courts.as_court('trial_court', trial_court_index)
+  trial_court.geolocate()  
+---
+sections:
+  - review_VTCertificateOfService: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_VTCertificateOfService
+code: |
+  # Set the allowed courts for this interview
+  #allowed_courts = []
+  nav.set_section("review_VTCertificateOfService")
+  user_role = "plaintiff"
+  user_ask_role = "plaintiff"
+  docket_number
+  trial_court.division
+  trial_court.county
+  set_progress(20)
+  users.gather()
+  set_parts(subtitle=str(users))
+  other_parties.gather()
+  set_progress(40)
+  first_class_mail
+  person_receiving_service
+  signature_date
+  interview_order_VTCertificateOfService = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  VTCertificateOfService_intro
+  interview_order_VTCertificateOfService
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  VTCertificateOfService_download
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Certificate_of_Service
+continue button field: VTCertificateOfService_intro
+question: |
+  Certificate of Service
+subquestion: |
+  This interview will help you fill out a Certificate of Service form in Vermont.
+---
+id: choose a court
+question: |
+  Choose a court
+fields:
+  - note: |
+      Choose the county court where you will file your forms. 
+      
+      If there's an existing court case, choose the county that the case is in. Look at the papers from the court.
+      
+      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
+  - County: trial_court_index
+    code: all_courts._load_courts()['address_county'].items()
+
+  - "Division": trial_court.division
+    input type: radio
+    choices:
+      - Family court: family
+      - Civil court: civil
+      - Probate court: probate
+---
+id: Documents you are sending to the other party
+question: |
+  Documents you are sending to the other party
+fields:
+  - "Vs": VS
+    maxlength: 10
+  - "First document": document1_name
+    maxlength: 74
+  - "Second document": document2_name
+    maxlength: 74
+  - "Third document": document3_name
+    maxlength: 74
+  - "Fourth document": document4_name
+    maxlength: 74
+---
+id: How you are sending the documents
+question: |
+  How you are sending the documents
+fields:
+  - "First class mail": first_class_mail
+    datatype: yesno
+  - "Personal delivery": personal_delivery
+    datatype: yesno
+  - "Describe other delivery": describe_other_delivery
+    maxlength: 45
+  - "Other delivery": other_delivery
+    datatype: yesno
+---
+id: Who you are sending the documents to
+question: |
+  Who you are sending the documents to
+fields:
+  - "Person receiving service": person_receiving_service
+    maxlength: 20
+  - "Other parties1 address address": Other_parties1_address_address
+    maxlength: 39
+  - "Users1 attorneys name": users1_attorneys_name
+    maxlength: 38
+---
+id: preview VTCertificateOfService
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: VTCertificateOfService_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  [user.address.address for user in users.complete_elements()]
+  addresses_to_search = [user.address for user in users.complete_elements()]
+---
+id: VTCertificateOfService review screen
+event: review_VTCertificateOfService
+question: |
+  Review your answers
+review:
+  - Edit: trial_court
+    button: |
+      **Trial court**
+  
+      % if defined("trial_court.division"):
+      * division: ${ trial_court.division }
+      % endif
+      % if defined("trial_court.address.county"):
+      * address: ${ trial_court.address.block() }
+      % endif
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: VS
+    button: |
+      **Vs**:
+      ${ VS }
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: other_parties.revisit
+    button: |
+      **Other parties**
+
+      % for item in other_parties:
+        * ${ item }
+      % endfor
+  - Edit: document1_name
+    button: |
+      **First document**:
+      ${ document1_name }
+  - Edit: document2_name
+    button: |
+      **Second document**:
+      ${ document2_name }
+  - Edit: document3_name
+    button: |
+      **Third document**:
+      ${ document3_name }
+  - Edit: document4_name
+    button: |
+      **Fourth document**:
+      ${ document4_name }
+  - Edit: first_class_mail
+    button: |
+      **First class mail**:
+      ${ word(yesno(first_class_mail)) }
+  - Edit: personal_delivery
+    button: |
+      **Personal delivery**:
+      ${ word(yesno(personal_delivery)) }
+  - Edit: person_receiving_service
+    button: |
+      **Person receiving service**:
+      ${ person_receiving_service }
+  - Edit: describe_other_delivery
+    button: |
+      **Describe other delivery**:
+      ${ describe_other_delivery }
+  - Edit: other_delivery
+    button: |
+      **Other delivery**:
+      ${ word(yesno(other_delivery)) }
+  - Edit: Other_parties1_address_address
+    button: |
+      **Other parties1 address address**:
+      ${ Other_parties1_address_address }
+  - Edit: signature_date
+    button: |
+      **Date of signature**:
+      ${ signature_date }
+  - Edit: users1_attorneys_name
+    button: |
+      **Users1 attorneys name**:
+      ${ users1_attorneys_name }
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+edit:
+  - name.first
+  - signature
+confirm: True
+
+---
+continue button field: other_parties.revisit
+question: |
+  Edit other_parties
+subquestion: |
+  ${ other_parties.table }
+
+  ${ other_parties.add_action() }
+---
+table: other_parties.table
+rows: other_parties
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - name.first
+confirm: True
+
+---
+id: download VTCertificateOfService
+event: VTCertificateOfService_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - VTCertificateOfService_Post_interview_instructions: ALDocument.using(title="Instructions", filename="VTCertificateOfService_next_steps.docx", enabled=True, has_addendum=False)
+  - VTCertificateOfService_attachment: ALDocument.using(title="Certificate of Service", filename="VTCertificateOfService", enabled=True, has_addendum=False, )
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[VTCertificateOfService_Post_interview_instructions, VTCertificateOfService_attachment], filename="VTCertificateOfService", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[VTCertificateOfService_attachment],  filename="VTCertificateOfService", title="All forms to deliver to court", enabled=True)
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+attachment:
+  name: Post-interview-Instructions
+  filename: VTCertificateOfService_next_steps
+  docx template file: VTCertificateOfService_next_steps.docx
+  variable name: VTCertificateOfService_Post_interview_instructions[i]
+  skip undefined: True
+  tagged pdf: True
+---
+attachment:
+  name: VTCertificateOfService
+  filename: VTCertificateOfService
+  variable name: VTCertificateOfService_attachment[i]
+  skip undefined: True
+  pdf template file: VTCertificateOfService.pdf
+  fields:
+      - "trial_court_division": ${ trial_court.division }
+      - "docket_number": ${ docket_number }
+      - "trial_court_county": ${ trial_court.address.county }
+      - "VS": ${ VS }
+      - "users1_name": ${ users[0] }
+      - "users1_name__1": ${ users[0] }
+      - "other_parties1_name": ${ other_parties[0] }
+      - "other_parties1_name__1": ${ other_parties[0] }
+      - "document1_name": ${ document1_name }
+      - "document2_name": ${ document2_name }
+      - "document3_name": ${ document3_name }
+      - "document4_name": ${ document4_name }
+      - "first_class_mail": ${ first_class_mail }
+      - "personal_delivery": ${ personal_delivery }
+      - "person_receiving_service": ${ person_receiving_service }
+      - "describe_other_delivery": ${ describe_other_delivery }
+      - "other_delivery": ${ other_delivery }
+      - "Other_parties1_address_address": ${ Other_parties1_address_address }
+      - "signature_date": ${ signature_date }
+      - "users1_signature": ${ users[0].signature_if_final(i) }
+      - "users1_attorneys_name": ${ users1_attorneys_name }
+
+
+
