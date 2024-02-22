@@ -73,14 +73,13 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
   docket_number
-  trial_court.division
-  trial_court.county
+  trial_court_division
   set_progress(20)
   users.gather()
   set_parts(subtitle=str(users))
   other_parties.gather()
   set_progress(40)
-  first_class_mail
+  served_how
   person_receiving_service
   signature_date
   interview_order_VTCertificateOfService = True
@@ -119,20 +118,21 @@ question: |
   Choose a court
 fields:
   - note: |
-      Choose the county court where you will file your forms. 
+      Choose the court division and the county court where you will file your forms. 
       
-      If there's an existing court case, choose the county that the case is in. Look at the papers from the court.
+      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
-  - County: trial_court_index
-    code: all_courts._load_courts()['address_county'].items()
 
-  - "Division": trial_court.division
+  - "Division": trial_court_division
     input type: radio
     choices:
       - Family court: family
       - Civil court: civil
       - Probate court: probate
+
+  - County: trial_court_index
+    code: all_courts._load_courts()['address_county'].items()
 ---
 id: Documents you are sending to the other party
 question: |
@@ -151,16 +151,36 @@ fields:
 ---
 id: How you are sending the documents
 question: |
-  How you are sending the documents
+  How you are sending the documents?
+subquestion: |
+  It's important to know the rules for sending or delivering documents for your kind of case.
+  
+  * [For family court cases: Read this information.](https://www.vermontjudiciary.org/family/divorce/serving-papers)
+  
+  * For civil court cases:
+  
+  * For probate cases:
+  
 fields:
-  - "First class mail": first_class_mail
-    datatype: yesno
-  - "Personal delivery": personal_delivery
-    datatype: yesno
-  - "Describe other delivery": describe_other_delivery
+      
+  - I served the documents in this way: served_how
+    input type: radio
+    choices: 
+      - First class mail: first_class_mail
+      - Personal delivery: personal_delivery
+      - Other delivery: other_delivery
+
+  - "Who did you deliver it to in person?": personal_delivery_who
     maxlength: 45
-  - "Other delivery": other_delivery
-    datatype: yesno
+    show if: 
+      variable: served_how
+      is: personal_delivery
+
+  - "Describe how you delivered the documents": describe_other_delivery
+    maxlength: 45
+    show if: 
+      variable: served_how
+      is: other_delivery
 ---
 id: Who you are sending the documents to
 question: |
@@ -208,8 +228,8 @@ review:
     button: |
       **Trial court**
   
-      % if defined("trial_court.division"):
-      * division: ${ trial_court.division }
+      % if defined("trial_court_division"):
+      * division: ${ trial_court_division }
       % endif
       % if defined("trial_court.address.county"):
       * address: ${ trial_court.address.block() }
@@ -371,7 +391,7 @@ attachment:
   skip undefined: True
   pdf template file: VTCertificateOfService.pdf
   fields:
-      - "trial_court_division": ${ trial_court.division }
+      - "trial_court_division": ${ trial_court_division }
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${ trial_court.address.county }
       - "VS": ${ VS }
