@@ -1,7 +1,8 @@
 #I don't know why I have to include the courts list in this package when it is already on the VTSharedYMLFile.yml.
 #Need to get court county to show
 #Need to get checkboxes to be checked on PDF
-#Need to offer names of common court documents that a person might check off. Then, give them option to write in others
+#Need to offer more names of common court documents that a person might check off (family, probate and civil). Then, also give them option to write in others. Need to do an overflow addendum for that.
+#Need an overflow addendum for served names and addresses
 
 ---
 include:
@@ -495,10 +496,25 @@ attachment:
       - "other_parties1_name": ${ other_parties[0] }
       - "people_receiving_service_name_1": ${ people_receiving_service[0].name }
       - "people_receiving_service_address_1": ${ people_receiving_service[0].address }
-      - "document1_name": "- ${ document1_name }"
-      - "document2_name": "- ${ document2_name }"
-      - "document3_name": "- ${ document3_name }"
-      - "document4_name": "- ${ document4_name }"
+      - "document1_name": |
+          % if divorcesc:
+            * Divorce Summons and Complaint
+          % endif
+          % if noa:
+            * Notice of Appearance
+          % endif
+          % if faminfo:
+            * Family Court Information Sheet - Form 800
+            % endif
+          % if divorcestip:
+            * Divorce stipulation
+            % endif
+          % if otherdocs:
+            * ${ document1_name }
+          % endif
+      - "document2_name": ${ document2_name }
+      - "document3_name": ${ document3_name }
+      - "document4_name": ${ document4_name }
       - "first_class_mail": ${ first_class_mail }
       - "personal_delivery": ${ personal_delivery }
       - "people_receiving_service": ${ people_receiving_service }
