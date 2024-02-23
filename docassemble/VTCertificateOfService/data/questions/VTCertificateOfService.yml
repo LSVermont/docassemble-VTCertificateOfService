@@ -200,13 +200,16 @@ question: |
 fields:
   - note: |
       Choose all that apply.
-  - Divorce summons and complaint: divorcesc
+  - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836: divorcesc
+    datatype: yesno
+    required: False
+  - Summons and Complaint for Divorce/Separation/Dissolution **with** Children - form 400-00836: divorcesckids
     datatype: yesno
     required: False
   - Notice of Appearance: noa
     datatype: yesno
     required: False
-  - Family court information form: faminfo
+  - Family Court Information Sheet - form 800: faminfo
     datatype: yesno
     required: False
   - Divorce stipulation (agreement): divorcestip
@@ -496,15 +499,20 @@ attachment:
       - "other_parties1_name": ${ other_parties[0] }
       - "people_receiving_service_name_1": ${ people_receiving_service[0].name }
       - "people_receiving_service_address_1": ${ people_receiving_service[0].address }
+      - "people_receiving_service_name_2": ${ people_receiving_service[1].name }
+      - "people_receiving_service_address_2": ${ people_receiving_service[1].address }
       - "document1_name": |
           % if divorcesc:
-            * Divorce Summons and Complaint
+            * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+          % endif
+          % if divorcesckids:
+            * Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
           % endif
           % if noa:
             * Notice of Appearance
           % endif
           % if faminfo:
-            * Family Court Information Sheet - Form 800
+            * Family Court Information Sheet - form 800
             % endif
           % if divorcestip:
             * Divorce stipulation
