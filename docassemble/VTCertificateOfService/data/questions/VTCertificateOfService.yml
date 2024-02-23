@@ -93,8 +93,13 @@ code: |
   set_parts(subtitle=str(users))
   other_parties[0].name.last
   set_progress(40)
-  document1_name
+  if trial_court_division == "family":
+    divorcesc
+  else:
+    document1_name
   people_receiving_service.gather()
+  signature_date
+  VTCertificateOfService_preview_question
   al_form_requires_digital_signature = False
   basic_questions_signature_flow 
   interview_order_VTCertificateOfService = True
@@ -187,22 +192,45 @@ fields:
       - II
       - III
     required: False
+
 ---
-id: Documents you are sending to the other party
+id: family documents serving to other party
 question: |
-  Documents you are sending to the other party
+  What documents are you serving to the other party?
 fields:
-  - "First document": document1_name
+  - note: |
+      Choose all that apply.
+  - Divorce summons and complaint: divorcesc
+    datatype: yesno
+    required: False
+  - Notice of Appearance: noa
+    datatype: yesno
+    required: False
+  - Family court information form: faminfo
+    datatype: yesno
+    required: False
+  - Divorce stipulation (agreement): divorcestip
+    datatype: yesno
+    required: False
+  - Other(s): otherfamdocs
+    datatype: yesno
+    required: False   
+    
+  - "Another document": document1_name
     maxlength: 74
-  - "Second document": document2_name
+    show if: otherfamdocs
+  - "Another document": document2_name
     maxlength: 74
     required: False
-  - "Third document": document3_name
+    show if: otherfamdocs
+  - "Another document": document3_name
     maxlength: 74
     required: False
-  - "Fourth document": document4_name
+    show if: otherfamdocs
+  - "Another document": document4_name
     maxlength: 74
     required: False
+    show if: otherfamdocs
 ---
 id: how many people will receive service
 question: |
@@ -260,6 +288,16 @@ continue button field: VTCertificateOfService_preview_question
 ---
 code: |
   signature_fields = ['users[0].signature']
+---
+id: signature date
+question: |
+  Signature date
+fields:
+  - "Date of your signature for the form": signature_date
+    datatype: date
+    required: False
+    default: |
+      ${ today() }
 ---
 code: |
   # This is a placeholder for the addresses that will be searched
