@@ -50,9 +50,7 @@ code: |
   al_form_type = "existing_case" 
 ---
 objects:
-  - users1_attorneys: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - document: ALPeopleList.using(there_are_any=True)
   - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
@@ -94,8 +92,10 @@ code: |
   set_progress(40)
   if trial_court_division == "family":
     divorcesc
+    if otherdocs:
+      other_documents_served
   else:
-    document1_name
+    other_documents_served
   people_receiving_service.gather()
   signature_date
   VTCertificateOfService_preview_question
@@ -211,25 +211,30 @@ fields:
   - Divorce stipulation (agreement): divorcestip
     datatype: yesno
     required: False
-  - Other(s): otherfamdocs
+  - Other(s): otherdocs
     datatype: yesno
     required: False   
-    
-  - "Another document": document1_name
+---
+id: other documents serving to other party
+continue button field: other_documents_served
+question: |
+  List the documents you are serving
+fields:
+  - "Other document #1": document1_name
     maxlength: 74
-    show if: otherfamdocs
-  - "Another document": document2_name
-    maxlength: 74
-    required: False
-    show if: otherfamdocs
-  - "Another document": document3_name
-    maxlength: 74
-    required: False
-    show if: otherfamdocs
-  - "Another document": document4_name
+
+  - "Other document #2": document2_name
     maxlength: 74
     required: False
-    show if: otherfamdocs
+
+  - "Other document #3": document3_name
+    maxlength: 74
+    required: False
+
+  - "Other document #4": document4_name
+    maxlength: 74
+    required: False
+
 ---
 id: how many people will receive service
 question: |
