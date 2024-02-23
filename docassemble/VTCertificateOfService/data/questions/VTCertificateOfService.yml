@@ -1,9 +1,8 @@
 #I don't know why I have to include the courts list in this package when it is already on the VTSharedYMLFile.yml.
 #Need to get court county to show
 #Need to get checkboxes to be checked on PDF
-#Need to offer names of divorce documents that a person might check off. Then, give them option to write in others
-#Preview your form screen doesn't show
-#Need to collect and show signature date
+#Need to offer names of common court documents that a person might check off. Then, give them option to write in others
+
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
