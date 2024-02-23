@@ -1,8 +1,15 @@
+#I don't know why I have to include the courts list in this package when it is already on the VTSharedYMLFile.yml.
+#Need to get court county to show
+#Need to get checkboxes to be checked on PDF
+#Need to offer names of divorce documents that a person might check off. Then, give them option to write in others
+#Preview your form screen doesn't show
+#Need to collect and show signature date
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
+
 ---
 metadata:
   title: >-
@@ -47,6 +54,12 @@ objects:
   - users1_attorneys: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
   - document: ALPeopleList.using(there_are_any=True)
+  - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
+  
+---
+code: |
+  people_receiving_service[i].address
+  people_receiving_service[i].complete = True
 ---
 # customized feedback form
 code: |   
@@ -76,12 +89,19 @@ code: |
   trial_court_division
   set_progress(20)
   users.gather()
+  user_has_lawyer
   set_parts(subtitle=str(users))
-  other_parties.gather()
+  other_parties[0].name.last
   set_progress(40)
-  served_how
-  person_receiving_service
+  if trial_court_division == "family":
+    divorcesc
+  else:
+    document1_name
+  people_receiving_service.gather()
   signature_date
+  VTCertificateOfService_preview_question
+  al_form_requires_digital_signature = False
+  basic_questions_signature_flow 
   interview_order_VTCertificateOfService = True
 ---
 ###################### Main order ######################
@@ -93,7 +113,6 @@ code: |
   al_intro_screen
   VTCertificateOfService_intro
   interview_order_VTCertificateOfService
-  signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
@@ -112,6 +131,15 @@ question: |
   Certificate of Service
 subquestion: |
   This interview will help you fill out a Certificate of Service form in Vermont.
+  
+  It's important to know the rules for sending or delivering documents for your kind of case.
+  
+  * [For family court cases: Read this information.](https://www.vermontjudiciary.org/family/divorce/serving-papers)
+  
+  * For civil court cases:
+  
+  * For probate cases:
+  
 ---
 id: choose a court
 question: |
@@ -134,64 +162,113 @@ fields:
   - County: trial_court_index
     code: all_courts._load_courts()['address_county'].items()
 ---
-id: Documents you are sending to the other party
+id: does user have a lawyer
 question: |
-  Documents you are sending to the other party
+  Do you have a lawyer working with you on this case?
 fields:
-  - "Vs": VS
-    maxlength: 10
-  - "First document": document1_name
-    maxlength: 74
-  - "Second document": document2_name
-    maxlength: 74
-  - "Third document": document3_name
-    maxlength: 74
-  - "Fourth document": document4_name
-    maxlength: 74
----
-id: How you are sending the documents
-question: |
-  How you are sending the documents?
-subquestion: |
-  It's important to know the rules for sending or delivering documents for your kind of case.
-  
-  * [For family court cases: Read this information.](https://www.vermontjudiciary.org/family/divorce/serving-papers)
-  
-  * For civil court cases:
-  
-  * For probate cases:
-  
-fields:
-      
-  - I served the documents in this way: served_how
-    input type: radio
-    choices: 
-      - First class mail: first_class_mail
-      - Personal delivery: personal_delivery
-      - Other delivery: other_delivery
-
-  - "Who did you deliver it to in person?": personal_delivery_who
-    maxlength: 45
-    show if: 
-      variable: served_how
-      is: personal_delivery
-
-  - "Describe how you delivered the documents": describe_other_delivery
-    maxlength: 45
-    show if: 
-      variable: served_how
-      is: other_delivery
----
-id: Who you are sending the documents to
-question: |
-  Who you are sending the documents to
-fields:
-  - "Person receiving service": person_receiving_service
-    maxlength: 20
-  - "Other parties1 address address": Other_parties1_address_address
-    maxlength: 39
-  - "Users1 attorneys name": users1_attorneys_name
+  - no label: user_has_lawyer
+    datatype: yesnoradio
+  - "Your lawyer's name": users1_attorneys_name
     maxlength: 38
+    show if: user_has_lawyer
+---
+---
+id: gather defendant name
+sets:
+  - other_parties[0].name.first
+  - other_parties[0].name.last
+question: |
+  Name of the other party
+fields:
+  - First Name: other_parties[0].name.first
+  - Middle Name: other_parties[0].name.middle
+    required: False
+  - Last Name: other_parties[0].name.last
+  - Suffix: other_parties[0].name.suffix
+    choices: 
+      - Jr
+      - Sr
+      - I
+      - II
+      - III
+    required: False
+
+---
+id: family documents serving to other party
+question: |
+  What documents are you serving to the other party?
+fields:
+  - note: |
+      Choose all that apply.
+  - Divorce summons and complaint: divorcesc
+    datatype: yesno
+    required: False
+  - Notice of Appearance: noa
+    datatype: yesno
+    required: False
+  - Family court information form: faminfo
+    datatype: yesno
+    required: False
+  - Divorce stipulation (agreement): divorcestip
+    datatype: yesno
+    required: False
+  - Other(s): otherfamdocs
+    datatype: yesno
+    required: False   
+    
+  - "Another document": document1_name
+    maxlength: 74
+    show if: otherfamdocs
+  - "Another document": document2_name
+    maxlength: 74
+    required: False
+    show if: otherfamdocs
+  - "Another document": document3_name
+    maxlength: 74
+    required: False
+    show if: otherfamdocs
+  - "Another document": document4_name
+    maxlength: 74
+    required: False
+    show if: otherfamdocs
+---
+id: how many people will receive service
+question: |
+  Number of people you will serve
+fields: 
+  - How many people will you send or give the documents to?: people_receiving_service.target_number
+    datatype: integer
+---
+id: gather info on people receiving service
+question: |
+  The ${ ordinal(i) } person you are serving
+  
+fields:
+  - Their name: people_receiving_service[i].name
+    maxlength: 40
+  - How you will serve them: people_receiving_service[i].method
+    datatype: radio
+    choices: 
+      - First-class US mail: first_class_mail
+      - Personal delivery / hand delivery: personal_delivery
+      - Another way: other_delivery
+  - What is the other way you will serve the documents?: describe_other_delivery
+    maxlength: 40
+    show if:
+      variable: people_receiving_service[i].method
+      is: other_delivery
+  - Their address: people_receiving_service[i].address
+    maxlength: 80
+
+---
+#id: Who you are sending the documents to
+#question: |
+#  Who you are sending the documents to
+#fields:
+#  - "Person receiving service": people_receiving_service
+#    maxlength: 20
+#  - "Other parties1 address address": Other_parties1_address_address
+#    maxlength: 39
 ---
 id: preview VTCertificateOfService
 question: |
@@ -211,6 +288,16 @@ continue button field: VTCertificateOfService_preview_question
 ---
 code: |
   signature_fields = ['users[0].signature']
+---
+id: signature date
+question: |
+  Signature date
+fields:
+  - "Date of your signature for the form": signature_date
+    datatype: date
+    required: False
+    default: |
+      ${ today() }
 ---
 code: |
   # This is a placeholder for the addresses that will be searched
@@ -238,10 +325,6 @@ review:
     button: |
       **Docket number**:
       ${ docket_number }
-  - Edit: VS
-    button: |
-      **Vs**:
-      ${ VS }
   - Edit: users.revisit
     button: |
       **Users**
@@ -280,10 +363,10 @@ review:
     button: |
       **Personal delivery**:
       ${ word(yesno(personal_delivery)) }
-  - Edit: person_receiving_service
+  - Edit: people_receiving_service
     button: |
       **Person receiving service**:
-      ${ person_receiving_service }
+      ${ people_receiving_service }
   - Edit: describe_other_delivery
     button: |
       **Describe other delivery**:
@@ -386,31 +469,41 @@ attachment:
 ---
 attachment:
   name: VTCertificateOfService
-  filename: VTCertificateOfService
+  filename: G certificate of service
   variable name: VTCertificateOfService_attachment[i]
   skip undefined: True
-  pdf template file: VTCertificateOfService.pdf
+  pdf template file: G_certificate_of_service.pdf
   fields:
-      - "trial_court_division": ${ trial_court_division }
+      - "trial_court_division": |
+          % if trial_court_division == "family":
+          FAMILY 
+          % endif
+          % if trial_court_division == "probate":
+          PROBATE 
+          % endif
+          % if trial_court_division == "civil":
+          CIVIL 
+          % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${ trial_court.address.county }
-      - "VS": ${ VS }
+      - "VS": "v."
       - "users1_name": ${ users[0] }
-      - "users1_name__1": ${ users[0] }
       - "other_parties1_name": ${ other_parties[0] }
-      - "other_parties1_name__1": ${ other_parties[0] }
-      - "document1_name": ${ document1_name }
-      - "document2_name": ${ document2_name }
-      - "document3_name": ${ document3_name }
-      - "document4_name": ${ document4_name }
+      - "people_receiving_service_name_1": ${ people_receiving_service[0].name }
+      - "people_receiving_service_address_1": ${ people_receiving_service[0].address }
+      - "document1_name": "- ${ document1_name }"
+      - "document2_name": "- ${ document2_name }"
+      - "document3_name": "- ${ document3_name }"
+      - "document4_name": "- ${ document4_name }"
       - "first_class_mail": ${ first_class_mail }
       - "personal_delivery": ${ personal_delivery }
-      - "person_receiving_service": ${ person_receiving_service }
+      - "people_receiving_service": ${ people_receiving_service }
       - "describe_other_delivery": ${ describe_other_delivery }
       - "other_delivery": ${ other_delivery }
       - "Other_parties1_address_address": ${ Other_parties1_address_address }
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
+      - "users1_name__1": ${ users[0] }
       - "users1_attorneys_name": ${ users1_attorneys_name }
 
 
