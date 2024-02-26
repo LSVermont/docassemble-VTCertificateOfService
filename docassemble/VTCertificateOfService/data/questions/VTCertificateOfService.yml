@@ -1,9 +1,8 @@
-#I don't know why I have to include the courts list in this package when it is already on the VTSharedYMLFile.yml.
 #Need to get court county to show
 #Need to get checkboxes to be checked on PDF
-#Need to offer names of divorce documents that a person might check off. Then, give them option to write in others
-#Preview your form screen doesn't show
-#Need to collect and show signature date
+#Need to offer more names of common court documents that a person might check off (family, probate and civil). Then, also give them option to write in others. Need to do an overflow addendum for that.
+#Need an overflow addendum for served names and addresses
+
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -51,26 +50,22 @@ code: |
   al_form_type = "existing_case" 
 ---
 objects:
-  - users1_attorneys: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - document: ALPeopleList.using(there_are_any=True)
   - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
 code: |
-  people_receiving_service[i].address
+  people_receiving_service[i].method
   people_receiving_service[i].complete = True
 ---
 # customized feedback form
 code: |   
   feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
+
 ---
-objects:
-  - all_courts: ALCourtLoader.using(file_name='courts_list.xlsx')
----
-code: |
-  trial_court = all_courts.as_court('trial_court', trial_court_index)
-  trial_court.geolocate()  
+#code: |
+#  trial_court = all_courts.as_court('trial_court', trial_court_index)
+#  trial_court.geolocate()  
 ---
 sections:
   - review_VTCertificateOfService: Review your answers
@@ -95,8 +90,10 @@ code: |
   set_progress(40)
   if trial_court_division == "family":
     divorcesc
+    if otherdocs:
+      document1_name   
   else:
-    document1_name
+      document1_name
   people_receiving_service.gather()
   signature_date
   VTCertificateOfService_preview_question
@@ -122,6 +119,40 @@ code: |
       },
   )
   VTCertificateOfService_download
+---
+id: basic questions intro screen
+decoration: form-lineal
+question: |
+  **${interview_short_title} in Vermont**
+subquestion: |  
+
+  <p>${ intro_vtcourtforms_3_steps }</p>
+  
+  <i class="fas fa-file-text fa-2x"></i> This interview produces the Certificate of Service - form 600-00264. It's used in many kinds of court cases to show the court that you "served" documents (sent them or delivered them) to the other party in your case.
+  
+  Before you start, be sure you have:
+  
+  * the names and address of the other party, or their lawyer if they have one
+  
+  * the names of the documents or forms you are sending or have sent.
+  
+  <i class="fas fa-clock fa-2x"></i> It may take you 10 minutes to complete this interview.
+  
+  <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer. Visit our [VTLawHelp.org website](https://vtlawhelp.org/roadmap/divorce/step-1) for more information about divorce, separation, or civil union dissolution.
+
+  <p>${ intro_vtcourtforms_created_by }</p>
+
+fields:
+  - To continue, please accept our [terms of use](https://vtlawhelp.org/vlh-privacy).: acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: al_intro_screen
 ---
 comment: |
   This question is used to introduce your interview. Please customize
@@ -200,39 +231,49 @@ question: |
 fields:
   - note: |
       Choose all that apply.
-  - Divorce summons and complaint: divorcesc
+  - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836: divorcesc
+    datatype: yesno
+    required: False
+  - Summons and Complaint for Divorce/Separation/Dissolution **with** Children - form 400-00836: divorcesckids
     datatype: yesno
     required: False
   - Notice of Appearance: noa
     datatype: yesno
     required: False
-  - Family court information form: faminfo
+  - Family Court Information Sheet - form 800: faminfo
     datatype: yesno
     required: False
   - Divorce stipulation (agreement): divorcestip
     datatype: yesno
     required: False
-  - Other(s): otherfamdocs
+  - Other(s): otherdocs
     datatype: yesno
     required: False   
-    
-  - "Another document": document1_name
+---
+id: other documents serving to other party
+question: |
+  List the documents you are serving
+subquestion: |
+  Don't include any you checked off on an earlier screen.
+fields:
+  - "Document #1": document1_name
     maxlength: 74
-    show if: otherfamdocs
-  - "Another document": document2_name
-    maxlength: 74
-    required: False
-    show if: otherfamdocs
-  - "Another document": document3_name
-    maxlength: 74
-    required: False
-    show if: otherfamdocs
-  - "Another document": document4_name
+
+  - "Document #2": document2_name
     maxlength: 74
     required: False
-    show if: otherfamdocs
+
+  - "Document #3": document3_name
+    maxlength: 74
+    required: False
+
+  - "Document #4": document4_name
+    maxlength: 74
+    required: False
+
 ---
 id: how many people will receive service
+generic object: DAList
 question: |
   Number of people you will serve
 fields: 
@@ -240,8 +281,13 @@ fields:
     datatype: integer
 ---
 id: gather info on people receiving service
+generic object: DAList
 question: |
-  The ${ ordinal(i) } person you are serving
+  % if hasattr(people_receiving_service, 'ask_number') and people_receiving_service.ask_number and people_receiving_service.target_number == 1:
+  The person you are serving
+  % else:
+  The ordinal person you are serving
+  % endif
   
 fields:
   - Their name: people_receiving_service[i].name
@@ -257,7 +303,7 @@ fields:
     show if:
       variable: people_receiving_service[i].method
       is: other_delivery
-  - Their address: people_receiving_service[i].address
+  - Their address -- on one line: people_receiving_service[i].address
     maxlength: 80
 
 ---
@@ -363,10 +409,10 @@ review:
     button: |
       **Personal delivery**:
       ${ word(yesno(personal_delivery)) }
-  - Edit: people_receiving_service
+  - Edit: people_receiving_service.name
     button: |
       **Person receiving service**:
-      ${ people_receiving_service }
+      ${ people_receiving_service.name }
   - Edit: describe_other_delivery
     button: |
       **Describe other delivery**:
@@ -491,16 +537,95 @@ attachment:
       - "other_parties1_name": ${ other_parties[0] }
       - "people_receiving_service_name_1": ${ people_receiving_service[0].name }
       - "people_receiving_service_address_1": ${ people_receiving_service[0].address }
-      - "document1_name": "- ${ document1_name }"
-      - "document2_name": "- ${ document2_name }"
-      - "document3_name": "- ${ document3_name }"
-      - "document4_name": "- ${ document4_name }"
-      - "first_class_mail": ${ first_class_mail }
-      - "personal_delivery": ${ personal_delivery }
-      - "people_receiving_service": ${ people_receiving_service }
+      - "people_receiving_service_name_2": ${ people_receiving_service[1].name }
+      - "people_receiving_service_address_2": ${ people_receiving_service[1].address }
+      - "people_receiving_service_name_3": ${ people_receiving_service[2].name }
+      - "people_receiving_service_address_3": ${ people_receiving_service[2].address }
+      - "people_receiving_service_name_4": ${ people_receiving_service[3].name }
+      - "people_receiving_service_address_4": ${ people_receiving_service[3].address }
+      - "people_receiving_service_name_5": ${ people_receiving_service[4].name }
+      - "people_receiving_service_address_5": ${ people_receiving_service[4].address }
+      - "document1_name": |
+          % if divorcesc:
+            * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+          % endif
+          % if divorcesckids:
+            * Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
+          % endif
+          % if noa:
+            * Notice of Appearance
+          % endif
+          % if faminfo:
+            * Family Court Information Sheet - form 800
+            % endif
+          % if divorcestip:
+            * Divorce stipulation
+            % endif
+          % if otherdocs:
+            * ${ document1_name }
+          % endif
+      - "document2_name": ${ document2_name }
+      - "document3_name": ${ document3_name }
+      - "document4_name": ${ document4_name }
+      - "people_receiving_service": |
+          % for item in people_receiving_service:
+            ${ item }
+          % endfor
+      - "first_class_mail": |
+          % if people_receiving_service[0].method == "first_class_mail":
+          True
+          % elif people_receiving_service[1].method == "first_class_mail":
+          True
+          % elif people_receiving_service[2].method == "first_class_mail":
+          True
+          % elif people_receiving_service[3].method == "first_class_mail":
+          True
+          % elif people_receiving_service[4].method == "first_class_mail":
+          True
+          % else:
+          False
+          % endif
+      - "personal_delivery": |
+          % if people_receiving_service[0].method == "personal_delivery":
+          True
+          % elif people_receiving_service[1].method == "personal_delivery":
+          True
+          % elif people_receiving_service[2].method == "personal_delivery":
+          True
+          % elif people_receiving_service[3].method == "personal_delivery":
+          True
+          % elif people_receiving_service[4].method == "personal_delivery":
+          True
+          % else:
+          False
+          % endif
+      - "other_delivery": |
+          % if people_receiving_service[0].method == "other_delivery":
+          True
+          % elif people_receiving_service[1].method == "other_delivery":
+          True
+          % elif people_receiving_service[2].method == "other_delivery":
+          True
+          % elif people_receiving_service[3].method == "other_delivery":
+          True
+          % elif people_receiving_service[4].method == "other_delivery":
+          True
+          % else:
+          False
+          % endif
       - "describe_other_delivery": ${ describe_other_delivery }
-      - "other_delivery": ${ other_delivery }
-      - "Other_parties1_address_address": ${ Other_parties1_address_address }
+      - "person_getting_delivery": |
+          % if people_receiving_service[0].method == "personal_delivery":
+          ${ people_receiving_service[0] }
+          % elif people_receiving_service[1].method == "personal_delivery":
+          ${ people_receiving_service[1] }
+          % elif people_receiving_service[2].method == "personal_delivery":
+          ${ people_receiving_service[2].name }
+          % elif people_receiving_service[3].method == "personal_delivery":
+          ${ people_receiving_service[3].name }
+          % elif people_receiving_service[4].method == "personal_delivery":
+          ${ people_receiving_service[4].name }          
+          % endif
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
       - "users1_name__1": ${ users[0] }
