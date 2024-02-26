@@ -1,5 +1,8 @@
 #Need to get court county to show
-#Need to get checkboxes to be checked on PDF
+#Need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
+#Add overflow for the documents list
+#How can I  reconsider("document1 name") so people can add or subtract things from their original list?
+#Can't edit everything in review screen
 #Need to offer more names of common court documents that a person might check off (family, probate and civil). Then, also give them option to write in others. Need to do an overflow addendum for that.
 #Need an overflow addendum for served names and addresses
 
@@ -50,7 +53,7 @@ code: |
   al_form_type = "existing_case" 
 ---
 objects:
-  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - users: ALPeopleList.using(ask_number=False,target_number=1)
   - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
@@ -248,13 +251,14 @@ fields:
     required: False
   - Other(s): otherdocs
     datatype: yesno
-    required: False   
+    required: False
+  
 ---
 id: other documents serving to other party
 question: |
   List the documents you are serving
 subquestion: |
-  Don't include any you checked off on an earlier screen.
+  Don't include any you may have checked off on an earlier screen.
 fields:
   - "Document #1": document1_name
     maxlength: 74
@@ -324,10 +328,10 @@ subquestion: |
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab. Click the "Edit answers" button
+  Click the image to open it in a new tab. Click the "Edit your answers" button
   to edit your answers.
 
-  ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit answers', color='info') }
+  ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit your answers', color='info') }
   
   Remember to come back to this window to continue and sign your form.
 continue button field: VTCertificateOfService_preview_question    
@@ -356,87 +360,132 @@ id: VTCertificateOfService review screen
 event: review_VTCertificateOfService
 question: |
   Review your answers
+subquestion: |  
+  ${ review_screen_instructions }
 review:
-  - Edit: trial_court
+  - Edit: trial_court_division
     button: |
-      **Trial court**
-  
-      % if defined("trial_court_division"):
-      * division: ${ trial_court_division }
+      Your court case is in: **${ trial_court.address.county } County**
+      
+      In this court division:
+      % if trial_court_division == "family":
+      **Family**
       % endif
-      % if defined("trial_court.address.county"):
-      * address: ${ trial_court.address.block() }
+      % if trial_court_division == "probate":
+      **Probate**
+      % endif
+      % if trial_court_division == "civil":
+      **Civil**
       % endif
   - Edit: docket_number
     button: |
-      **Docket number**:
-      ${ docket_number }
+      Case number / docket number: 
+      % if docket_number != '':
+      **${ showifdef("docket_number") }**
+      % else:
+      **Unknown**
+      % endif
   - Edit: users.revisit
     button: |
-      **Users**
-
+      You and your signature:
       % for item in users:
-        * ${ item }
+      **${ item }**
       % endfor
+  - Edit: user_has_lawyer
+    button: |
+      Have a lawyer working with you on this case?
+      **${ word(yesno(user_has_lawyer)) }** 
+      % if user_has_lawyer:
+      ; **${ showifdef("users1_attorneys_name") }**
+      % endif
   - Edit: other_parties.revisit
     button: |
-      **Other parties**
-
+      Other party in this case:
       % for item in other_parties:
-        * ${ item }
+      **${ item }**
       % endfor
+  - Edit: otherdocs
+    button: |
+      Documents you are serving to the other party:
+      
+      % if divorcesc:
+        * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+      % endif
+      % if divorcesckids:
+        * Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
+      % endif
+      % if noa:
+        * Notice of Appearance
+      % endif
+      % if faminfo:
+        * Family Court Information Sheet - form 800
+      % endif
+      % if divorcestip:
+        * Divorce stipulation
+      % endif
+
   - Edit: document1_name
     button: |
-      **First document**:
-      ${ document1_name }
-  - Edit: document2_name
-    button: |
-      **Second document**:
-      ${ document2_name }
-  - Edit: document3_name
-    button: |
-      **Third document**:
-      ${ document3_name }
-  - Edit: document4_name
-    button: |
-      **Fourth document**:
-      ${ document4_name }
-  - Edit: first_class_mail
-    button: |
-      **First class mail**:
-      ${ word(yesno(first_class_mail)) }
-  - Edit: personal_delivery
-    button: |
-      **Personal delivery**:
-      ${ word(yesno(personal_delivery)) }
-  - Edit: people_receiving_service.name
-    button: |
-      **Person receiving service**:
-      ${ people_receiving_service.name }
+      You included these documents on the list:
+      
+      % if document1_name != '':
+      * ${ showifdef("document1_name") }
+      % endif
+      % if document2_name != '':
+      * ${ showifdef("document2_name") }
+      % endif
+      % if document3_name != '':      
+      * ${ showifdef("document3_name") }
+      % endif
+      % if document4_name != '':            
+      * ${ showifdef("document4_name") }
+      % endif
+
+
+  - Edit: people_receiving_service.revisit
+    button: |-
+      About the people you are serving the documents to (edit name, address, delivery method):
+
+      % for item in people_receiving_service:
+      * **${ item }**
+      % endfor
   - Edit: describe_other_delivery
     button: |
-      **Describe other delivery**:
-      ${ describe_other_delivery }
-  - Edit: other_delivery
-    button: |
-      **Other delivery**:
-      ${ word(yesno(other_delivery)) }
-  - Edit: Other_parties1_address_address
-    button: |
-      **Other parties1 address address**:
-      ${ Other_parties1_address_address }
+      Describe the other delivery method you mentioned:
+      **${ describe_other_delivery }**
+
   - Edit: signature_date
     button: |
-      **Date of signature**:
-      ${ signature_date }
-  - Edit: users1_attorneys_name
-    button: |
-      **Users1 attorneys name**:
-      ${ users1_attorneys_name }
+      Date of signature:
+      **${ format_date(signature_date, format='M/d/yyyy') }**
+---
+continue button field: people_receiving_service.revisit
+question: |
+  Edit the people being served
+
+subquestion: |
+  ${ people_receiving_service.table }
+
+  ${ people_receiving_service.add_action() }
+---
+table: people_receiving_service.table
+rows: people_receiving_service
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name") else ""
+  - Address: |
+      row_item.address if defined("row_item.address") else ""
+  - How serving them: |
+      row_item.method if defined("row_item.method") else ""  
+edit:
+  - name.first
+  - address
+  - method
+confirm: True
 ---
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit info about you
 subquestion: |
   ${ users.table }
 
@@ -453,11 +502,10 @@ edit:
   - name.first
   - signature
 confirm: True
-
 ---
 continue button field: other_parties.revisit
 question: |
-  Edit other_parties
+  Edit info about the other party in this case
 subquestion: |
   ${ other_parties.table }
 
@@ -480,9 +528,9 @@ question: |
 subquestion: |
   Thank you ${users}. Your form is ready to download and deliver.
   
-  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+  View, download and send your form below. Click the "Edit your answers" button to fix any mistakes.
 
-  ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit answers', color='info') }
+  ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit your answers', color='info') }
   
   
   ${ al_user_bundle.download_list_html() }
@@ -557,16 +605,24 @@ attachment:
           % endif
           % if faminfo:
             * Family Court Information Sheet - form 800
-            % endif
+          % endif
           % if divorcestip:
             * Divorce stipulation
-            % endif
-          % if otherdocs:
-            * ${ document1_name }
           % endif
-      - "document2_name": ${ document2_name }
-      - "document3_name": ${ document3_name }
-      - "document4_name": ${ document4_name }
+          % if otherdocs:
+            % if document1_name != '':
+            * ${ showifdef("document1_name") }
+            % endif
+            % if document2_name != '':
+            * ${ showifdef("document2_name") }
+            % endif
+            % if document3_name != '':
+            * ${ showifdef("document3_name") }
+            % endif
+            % if document4_name != '':
+            * ${ showifdef("document4_name") }
+            % endif
+          % endif
       - "people_receiving_service": |
           % for item in people_receiving_service:
             ${ item }
