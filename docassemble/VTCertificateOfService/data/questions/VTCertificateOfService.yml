@@ -55,7 +55,7 @@ objects:
   
 ---
 code: |
-  people_receiving_service[i].address
+  people_receiving_service[i].method
   people_receiving_service[i].complete = True
 ---
 # customized feedback form
@@ -273,6 +273,7 @@ fields:
 
 ---
 id: how many people will receive service
+generic object: DAList
 question: |
   Number of people you will serve
 fields: 
@@ -282,7 +283,11 @@ fields:
 id: gather info on people receiving service
 generic object: DAList
 question: |
+  % if hasattr(people_receiving_service, 'ask_number') and people_receiving_service.ask_number and people_receiving_service.target_number == 1:
+  The person you are serving
+  % else:
   The ${ ordinal(i) } person you are serving
+  % endif
   
 fields:
   - Their name: people_receiving_service[i].name
@@ -298,7 +303,7 @@ fields:
     show if:
       variable: people_receiving_service[i].method
       is: other_delivery
-  - Their address: people_receiving_service[i].address
+  - Their address -- on one line: people_receiving_service[i].address
     maxlength: 80
 
 ---
@@ -556,11 +561,53 @@ attachment:
       - "document2_name": ${ document2_name }
       - "document3_name": ${ document3_name }
       - "document4_name": ${ document4_name }
-      - "first_class_mail": ${ first_class_mail }
-      - "personal_delivery": ${ personal_delivery }
-      - "people_receiving_service": ${ people_receiving_service }
+      - "people_receiving_service": |
+          % for item in people_receiving_service:
+            ${ item }
+          % endfor
+      - "first_class_mail": |
+          % if people_receiving_service[0].method == "first_class_mail":
+          True
+          % elif people_receiving_service[1].method == "first_class_mail":
+          True
+          % elif people_receiving_service[2].method == "first_class_mail":
+          True
+          % elif people_receiving_service[3].method == "first_class_mail":
+          True
+          % elif people_receiving_service[4].method == "first_class_mail":
+          True
+          % else:
+          False
+          % endif
+      - "personal_delivery": |
+          % if people_receiving_service[0].method == "personal_delivery":
+          True
+          % elif people_receiving_service[1].method == "personal_delivery":
+          True
+          % elif people_receiving_service[2].method == "personal_delivery":
+          True
+          % elif people_receiving_service[3].method == "personal_delivery":
+          True
+          % elif people_receiving_service[4].method == "personal_delivery":
+          True
+          % else:
+          False
+          % endif
+      - "other_delivery": |
+          % if people_receiving_service[0].method == "other_delivery":
+          True
+          % elif people_receiving_service[1].method == "other_delivery":
+          True
+          % elif people_receiving_service[2].method == "other_delivery":
+          True
+          % elif people_receiving_service[3].method == "other_delivery":
+          True
+          % elif people_receiving_service[4].method == "other_delivery":
+          True
+          % else:
+          False
+          % endif
       - "describe_other_delivery": ${ describe_other_delivery }
-      - "other_delivery": ${ other_delivery }
       - "Other_parties1_address_address": ${ Other_parties1_address_address }
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
