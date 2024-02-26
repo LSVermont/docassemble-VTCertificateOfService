@@ -250,7 +250,10 @@ fields:
   - Divorce stipulation (agreement): divorcestip
     datatype: yesno
     required: False
-  - Other(s): otherdocs
+  - None of the above: no_docs_above
+    datatype: yesno
+    required: False
+  - Other documents that I want to list: otherdocs
     datatype: yesno
     required: False
 ---
@@ -258,21 +261,25 @@ id: other documents serving to other party
 question: |
   List the documents you are serving
 subquestion: |
-  Don't include any you may have checked off on an earlier screen.
+  % if no_docs_above:
+  
+  % else:
+  Don't include any you may have checked off on the other screen.
+  % endif
 fields:
-  - "Document #1": document1_name
-    maxlength: 74
+  - "Document:": document1_name
+    maxlength: 86
 
-  - "Document #2": document2_name
-    maxlength: 74
+  - "Document:": document2_name
+    maxlength: 86
     required: False
 
-  - "Document #3": document3_name
-    maxlength: 74
+  - "Document:": document3_name
+    maxlength: 86
     required: False
 
-  - "Document #4": document4_name
-    maxlength: 74
+  - "Document:": document4_name
+    maxlength: 86
     required: False
 
 ---
@@ -406,8 +413,12 @@ review:
       % endfor
   - Edit: otherdocs
     button: |
+      % if no_docs_above:
+      
+      % else:
       Documents you are serving to the other party:
       
+      % endif
       % if divorcesc:
         * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
       % endif
@@ -426,7 +437,11 @@ review:
 
   - Edit: document1_name
     button: |
-      You included these documents on the list:
+      % if no_docs_above:
+      Documents you are serving to the other party:
+      % else:
+      Also serving these:
+      % endif
       
       % if document1_name != '':
       * ${ showifdef("document1_name") }
@@ -583,16 +598,16 @@ attachment:
       - "VS": "v."
       - "users1_name": ${ users[0] }
       - "other_parties1_name": ${ other_parties[0] }
-      - "people_receiving_service_name_1": ${ people_receiving_service[0].name }
-      - "people_receiving_service_address_1": ${ people_receiving_service[0].address }
-      - "people_receiving_service_name_2": ${ people_receiving_service[1].name }
-      - "people_receiving_service_address_2": ${ people_receiving_service[1].address }
-      - "people_receiving_service_name_3": ${ people_receiving_service[2].name }
-      - "people_receiving_service_address_3": ${ people_receiving_service[2].address }
-      - "people_receiving_service_name_4": ${ people_receiving_service[3].name }
-      - "people_receiving_service_address_4": ${ people_receiving_service[3].address }
-      - "people_receiving_service_name_5": ${ people_receiving_service[4].name }
-      - "people_receiving_service_address_5": ${ people_receiving_service[4].address }
+      - "people_receiving_service_name_1": "* ${ people_receiving_service[0].name }"
+      - "people_receiving_service_address_1": "* ${ people_receiving_service[0].address }"
+      - "people_receiving_service_name_2": "* ${ people_receiving_service[1].name }"
+      - "people_receiving_service_address_2": "* ${ people_receiving_service[1].address }"
+      - "people_receiving_service_name_3": "* ${ people_receiving_service[2].name }"
+      - "people_receiving_service_address_3": "* ${ people_receiving_service[2].address }"
+      - "people_receiving_service_name_4": "* ${ people_receiving_service[3].name }"
+      - "people_receiving_service_address_4": "* ${ people_receiving_service[3].address }"
+      - "people_receiving_service_name_5": "* ${ people_receiving_service[4].name }"
+      - "people_receiving_service_address_5": "* ${ people_receiving_service[4].address }"
       - "document1_name": |
           % if divorcesc:
             * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
@@ -625,7 +640,7 @@ attachment:
           % endif
       - "people_receiving_service": |
           % for item in people_receiving_service:
-            ${ item }
+            * ${ item }
           % endfor
       - "first_class_mail": |
           % if people_receiving_service[0].method == "first_class_mail":
