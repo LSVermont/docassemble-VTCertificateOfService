@@ -1,4 +1,3 @@
-#I don't know why I have to include the courts list in this package when it is already on the VTSharedYMLFile.yml.
 #Need to get court county to show
 #Need to get checkboxes to be checked on PDF
 #Need to offer more names of common court documents that a person might check off (family, probate and civil). Then, also give them option to write in others. Need to do an overflow addendum for that.
@@ -62,13 +61,11 @@ code: |
 # customized feedback form
 code: |   
   feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
+
 ---
-objects:
-  - all_courts: ALCourtLoader.using(file_name='courts_list.xlsx')
----
-code: |
-  trial_court = all_courts.as_court('trial_court', trial_court_index)
-  trial_court.geolocate()  
+#code: |
+#  trial_court = all_courts.as_court('trial_court', trial_court_index)
+#  trial_court.geolocate()  
 ---
 sections:
   - review_VTCertificateOfService: Review your answers
@@ -94,9 +91,9 @@ code: |
   if trial_court_division == "family":
     divorcesc
     if otherdocs:
-      other_documents_served
+      document1_name   
   else:
-    other_documents_served
+      document1_name
   people_receiving_service.gather()
   signature_date
   VTCertificateOfService_preview_question
@@ -122,6 +119,40 @@ code: |
       },
   )
   VTCertificateOfService_download
+---
+id: basic questions intro screen
+decoration: form-lineal
+question: |
+  **${interview_short_title} in Vermont**
+subquestion: |  
+
+  <p>${ intro_vtcourtforms_3_steps }</p>
+  
+  <i class="fas fa-file-text fa-2x"></i> This interview produces the Certificate of Service - form 600-00264. It's used in many kinds of court cases to show the court that you "served" documents (sent them or delivered them) to the other party in your case.
+  
+  Before you start, be sure you have:
+  
+  * the names and address of the other party, or their lawyer if they have one
+  
+  * the names of the documents or forms you are sending or have sent.
+  
+  <i class="fas fa-clock fa-2x"></i> It may take you 10 minutes to complete this interview.
+  
+  <i class="fas fa-circle-info fa-2x"></i> It is free to use this program. This site is not a lawyer. Visit our [VTLawHelp.org website](https://vtlawhelp.org/roadmap/divorce/step-1) for more information about divorce, separation, or civil union dissolution.
+
+  <p>${ intro_vtcourtforms_created_by }</p>
+
+fields:
+  - To continue, please accept our [terms of use](https://vtlawhelp.org/vlh-privacy).: acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: al_intro_screen
 ---
 comment: |
   This question is used to introduce your interview. Please customize
@@ -220,22 +251,23 @@ fields:
     required: False   
 ---
 id: other documents serving to other party
-continue button field: other_documents_served
 question: |
   List the documents you are serving
+subquestion: |
+  Don't include any you checked off on an earlier screen.
 fields:
-  - "Other document #1": document1_name
+  - "Document #1": document1_name
     maxlength: 74
 
-  - "Other document #2": document2_name
-    maxlength: 74
-    required: False
-
-  - "Other document #3": document3_name
+  - "Document #2": document2_name
     maxlength: 74
     required: False
 
-  - "Other document #4": document4_name
+  - "Document #3": document3_name
+    maxlength: 74
+    required: False
+
+  - "Document #4": document4_name
     maxlength: 74
     required: False
 
@@ -248,6 +280,7 @@ fields:
     datatype: integer
 ---
 id: gather info on people receiving service
+generic object: DAList
 question: |
   The ${ ordinal(i) } person you are serving
   
@@ -371,10 +404,10 @@ review:
     button: |
       **Personal delivery**:
       ${ word(yesno(personal_delivery)) }
-  - Edit: people_receiving_service
+  - Edit: people_receiving_service.name
     button: |
       **Person receiving service**:
-      ${ people_receiving_service }
+      ${ people_receiving_service.name }
   - Edit: describe_other_delivery
     button: |
       **Describe other delivery**:
