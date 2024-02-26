@@ -286,7 +286,7 @@ question: |
   % if hasattr(people_receiving_service, 'ask_number') and people_receiving_service.ask_number and people_receiving_service.target_number == 1:
   The person you are serving
   % else:
-  The ${ ordinal(i) } person you are serving
+  The ordinal person you are serving
   % endif
   
 fields:
@@ -539,6 +539,12 @@ attachment:
       - "people_receiving_service_address_1": ${ people_receiving_service[0].address }
       - "people_receiving_service_name_2": ${ people_receiving_service[1].name }
       - "people_receiving_service_address_2": ${ people_receiving_service[1].address }
+      - "people_receiving_service_name_3": ${ people_receiving_service[2].name }
+      - "people_receiving_service_address_3": ${ people_receiving_service[2].address }
+      - "people_receiving_service_name_4": ${ people_receiving_service[3].name }
+      - "people_receiving_service_address_4": ${ people_receiving_service[3].address }
+      - "people_receiving_service_name_5": ${ people_receiving_service[4].name }
+      - "people_receiving_service_address_5": ${ people_receiving_service[4].address }
       - "document1_name": |
           % if divorcesc:
             * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
@@ -608,7 +614,18 @@ attachment:
           False
           % endif
       - "describe_other_delivery": ${ describe_other_delivery }
-      - "Other_parties1_address_address": ${ Other_parties1_address_address }
+      - "person_getting_delivery": |
+          % if people_receiving_service[0].method == "personal_delivery":
+          ${ people_receiving_service[0] }
+          % elif people_receiving_service[1].method == "personal_delivery":
+          ${ people_receiving_service[1] }
+          % elif people_receiving_service[2].method == "personal_delivery":
+          ${ people_receiving_service[2].name }
+          % elif people_receiving_service[3].method == "personal_delivery":
+          ${ people_receiving_service[3].name }
+          % elif people_receiving_service[4].method == "personal_delivery":
+          ${ people_receiving_service[4].name }          
+          % endif
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
       - "users1_name__1": ${ users[0] }
