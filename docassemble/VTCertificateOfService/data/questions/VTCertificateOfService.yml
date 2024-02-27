@@ -1,8 +1,8 @@
 #Need to get court county to show
-#Why does this appear at end of interview after I have edited? id: any other opposing parties
 #Need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
-#Add overflow for the documents list -- have room for 6 documents so only offer 6 in the main lists, then make others go on overflow?
 #How can I  reconsider("document1 name") so people can add or subtract things from their original list?
+#Why does this appear at end of interview after I have edited? id: any other opposing parties
+#Add overflow for the documents list -- have room for 6 documents so only offer 6 in the main lists, then make others go on overflow?
 #Can't edit everything in review screen
 #Need to offer more names of common court documents that a person might check off (family, probate and civil). Then, also give them option to write in others. Need to do an overflow addendum for that.
 #Need an overflow addendum for served names and addresses
@@ -196,6 +196,8 @@ fields:
 
   - County: trial_court_index
     code: all_courts._load_courts()['address_county'].items()
+    
+
 ---
 id: does user have a lawyer
 question: |
@@ -552,7 +554,8 @@ subquestion: |
   
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
-
+  
+  ${(trial_court.address.county)}
 progress: 100
 ---
 # ALDocument objects specify the metadata for each template
