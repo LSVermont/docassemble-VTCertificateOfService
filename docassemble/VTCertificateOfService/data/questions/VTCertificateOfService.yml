@@ -1,7 +1,6 @@
-#Need to get court county to show
 #Need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
 #How can I  reconsider("document1 name") so people can add or subtract things from their original list?
-#Why does this appear at end of interview after I have edited? id: any other opposing parties
+#Why does this appear at end of interview after I have edited? id: any other opposing parties  Sometimes I also see any other users?
 #Add overflow for the documents list -- have room for 6 documents so only offer 6 in the main lists, then make others go on overflow?
 #Can't edit everything in review screen
 #Need to offer more names of common court documents that a person might check off (family, probate and civil). Then, also give them option to write in others. Need to do an overflow addendum for that.
@@ -31,7 +30,6 @@ metadata:
     https://vtlawhelp.org/roadmap/divorce/step-3
   help_page_title: >-
     Divorce Roadmap on VTLawHelp.org
-  allowed_courts: []
   typical_role: "plaintiff"
   al_weaver_version: "1.10.3"
   generated_on: "2024-02-22"
@@ -65,11 +63,6 @@ code: |
 # customized feedback form
 code: |   
   feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
-
----
-#code: |
-#  trial_court = all_courts.as_court('trial_court', trial_court_index)
-#  trial_court.geolocate()  
 ---
 sections:
   - review_VTCertificateOfService: Review your answers
@@ -79,8 +72,6 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VTCertificateOfService
 code: |
-  # Set the allowed courts for this interview
-  #allowed_courts = []
   nav.set_section("review_VTCertificateOfService")
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
@@ -100,6 +91,8 @@ code: |
       document1_name
   people_receiving_service.gather()
   signature_date
+  #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
+  trial_court.address.county
   VTCertificateOfService_preview_question
   al_form_requires_digital_signature = False
   basic_questions_signature_flow 
@@ -127,7 +120,7 @@ code: |
 id: basic questions intro screen
 decoration: form-lineal
 question: |
-  **${interview_short_title} in Vermont**
+  **${interview_short_title}**
 subquestion: |  
 
   <p>${ intro_vtcourtforms_3_steps }</p>
@@ -137,7 +130,6 @@ subquestion: |
   Before you start, be sure you have:
   
   * the names and address of the other party, or their lawyer if they have one
-  
   * the names of the documents or forms you are sending or have sent.
   
   <i class="fas fa-clock fa-2x"></i> It may take you 10 minutes to complete this interview.
@@ -372,9 +364,9 @@ question: |
 subquestion: |  
   ${ review_screen_instructions }
 review:
-  - Edit: trial_court_division
+  - Edit: trial_court_index
     button: |
-      Your court case is in: **${ trial_court.address.county } County**
+      Your court case is in: **${(trial_court.address.county)} County**
       
       In this court division:
       % if trial_court_division == "family":
@@ -541,11 +533,9 @@ confirm: True
 id: download VTCertificateOfService
 event: VTCertificateOfService_download
 question: |
-  All done
+  Review your forms and download and/or print them
 subquestion: |
-  Thank you ${users}. Your form is ready to download and deliver.
-  
-  View, download and send your form below. Click the "Edit your answers" button to fix any mistakes.
+  ${ download_screen_instructions }
 
   ${ action_button_html(url_action('review_VTCertificateOfService'), label='Edit your answers', color='info') }
   
@@ -555,7 +545,10 @@ subquestion: |
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
   
-  ${(trial_court.address.county)}
+  ${ download_screen_bottom_instructions }
+  
+  ${ collapse_template(not_seeing_email) }
+  ${ collapse_template(log_out_when_done) }
 progress: 100
 ---
 # ALDocument objects specify the metadata for each template
@@ -597,7 +590,7 @@ attachment:
           CIVIL 
           % endif
       - "docket_number": ${ docket_number }
-      - "trial_court_county": ${ trial_court.address.county }
+      - "trial_court_county": ${(trial_court.address.county)}
       - "VS": "v."
       - "users1_name": ${ users[0] }
       - "other_parties1_name": ${ other_parties[0] }
