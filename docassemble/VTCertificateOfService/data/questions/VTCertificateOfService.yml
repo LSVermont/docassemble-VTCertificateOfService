@@ -52,7 +52,8 @@ code: |
   al_form_type = "existing_case" 
 ---
 objects:
-  - users: ALPeopleList.using(ask_number=False,target_number=1)
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - other_parties: ALPeopleList.using(ask_number=True,target_number=1)
   - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
