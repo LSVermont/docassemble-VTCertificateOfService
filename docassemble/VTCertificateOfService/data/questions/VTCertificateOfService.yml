@@ -54,7 +54,7 @@ code: |
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - other_parties: ALPeopleList.using(ask_number=True, complete_attribute='address.address')
+  - other_parties: ALPeopleList.using(ask_number=True, complete_attribute='name.last')
   - other_people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
@@ -79,6 +79,7 @@ code: |
   user_ask_role = "plaintiff"
 
   other_parties.gather()
+  other_people_receiving_service.gather()
   docket_number
   trial_court_division
   set_progress(20)
@@ -89,7 +90,7 @@ code: |
   set_progress(40)
   divorcesc
   document1_name
-  other_people_receiving_service.gather()
+
   signature_date
   #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
   trial_court.address.county
@@ -201,12 +202,11 @@ fields:
     maxlength: 38
     show if: user_has_lawyer
 ---
----
 id: how many other parties
 question: |
-  The other party that you will serve papers to
+  The other party or parties
 fields:
-  - How many defendants/other parties in all?: other_parties.target_number
+  - How many defendants/other parties are in this case?: other_parties.target_number
     datatype: integer
 ---  
 id: gather other parties info
@@ -215,7 +215,7 @@ sets:
   - other_parties[i].name.last
   - other_parties[i].address.address  
 question: |
-  About the **${ ordinal(i) }** other party that you will serve papers to
+  About the **${ ordinal(i) }** defendant
 fields:
   - First Name: other_parties[i].name.first
   - Middle Name: other_parties[i].name.middle
@@ -231,12 +231,66 @@ fields:
     required: False
   - note: |
       ---
+  - I am serving (sending or delivering) documents to them: other_parties[i].served
+    datatype: yesnoradio
   - Address: other_parties[i].address.address
+    show if: other_parties[i].served
   - Unit: other_parties[i].address.unit
+    show if: other_parties[i].served
   - City: other_parties[i].address.city
+    show if: other_parties[i].served
   - State: other_parties[i].address.state
+    show if: other_parties[i].served
   - Zip code: other_parties[i].address.zip
-
+    show if: other_parties[i].served
+  - note: |
+      ---
+  - How you will serve them?: other_parties[i].method
+    datatype: radio
+    choices: 
+      - First-class US mail: first_class_mail
+      - Personal delivery / hand delivery: personal_delivery
+      - Another way: other_delivery
+    show if: other_parties[i].served
+  - What is the other way you will serve the documents?: describe_other_delivery
+    maxlength: 40
+    show if:
+      variable: other_parties[i].method
+      is: other_delivery
+---
+id: how many other people will receive service
+generic object: DAList
+question: |
+  Number of other people you will serve
+fields: 
+  - Besides the defendant(s), how many **other** people are you serving documents to? (Example - a lawyer): other_people_receiving_service.target_number
+    datatype: integer
+---
+id: gather info on people receiving service
+generic object: DAList
+question: |
+  % if hasattr(other_people_receiving_service, 'ask_number') and other_people_receiving_service.ask_number and other_people_receiving_service.target_number == 1:
+  The other person you are serving
+  % else:
+  The **${ ordinal(i) }** other person you are serving
+  % endif
+  
+fields:
+  - Their name: other_people_receiving_service[i].name
+    maxlength: 40
+  - How you will serve them: other_people_receiving_service[i].method
+    datatype: radio
+    choices: 
+      - First-class US mail: first_class_mail
+      - Personal delivery / hand delivery: personal_delivery
+      - Another way: other_delivery
+  - What is the other way you will serve the documents?: describe_other_delivery
+    maxlength: 40
+    show if:
+      variable: other_people_receiving_service[i].method
+      is: other_delivery
+  - Enter their address on one line: other_people_receiving_service[i].address
+    maxlength: 80 
 
 ---
 id: family documents serving to other party
@@ -336,50 +390,6 @@ fields:
     maxlength: 86
     required: False
     show if: more_docs
----
-id: how many people will receive service
-generic object: DAList
-question: |
-  Number of people you will serve
-fields: 
-  - Besides the other parties / defendants, how many other people will you send or give the documents to?: other_people_receiving_service.target_number
-    datatype: integer
----
-id: gather info on people receiving service
-generic object: DAList
-question: |
-  % if hasattr(other_people_receiving_service, 'ask_number') and other_people_receiving_service.ask_number and other_people_receiving_service.target_number == 1:
-  The person you are serving
-  % else:
-  The **${ ordinal(i) }** person you are serving
-  % endif
-  
-fields:
-  - Their name: other_people_receiving_service[i].name
-    maxlength: 40
-  - How you will serve them: other_people_receiving_service[i].method
-    datatype: radio
-    choices: 
-      - First-class US mail: first_class_mail
-      - Personal delivery / hand delivery: personal_delivery
-      - Another way: other_delivery
-  - What is the other way you will serve the documents?: describe_other_delivery
-    maxlength: 40
-    show if:
-      variable: other_people_receiving_service[i].method
-      is: other_delivery
-  - Their address: other_people_receiving_service[i].address
-    datatype: object_radio
-    choices:
-      - other_parties[0].address if defined("other_parties[0].address.address") else None
-    show if:
-      code: |
-        defined("other_parties[0].address.address")
-  - Enter their address on one line: a_different_address
-    required: False
-    maxlength: 80 
-
-
 ---
 id: preview VTCertificateOfService
 question: |
