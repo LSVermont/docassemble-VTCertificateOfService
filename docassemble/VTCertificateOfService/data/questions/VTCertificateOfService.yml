@@ -1,10 +1,11 @@
-#Need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
-#How can I  reconsider("document1 name") so people can add or subtract things from their original list?
-#Add overflow for the documents list -- have room for 6 documents so make others go on overflow?
-#Can't edit everything in review screen
-#Need to offer more names of common court documents that a person might check off (family, probate and civil).
+#On the review screen, need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
+#How can I  reconsider the documents list so people can add or subtract things from their original list?
+#Add overflow for the documents list -- have room for 6 documents so make others go on overflow
 #Need an overflow addendum for served names and addresses
+#Can't edit everything in review screen, like I get an error when trying to edit the other delivery method
+#Need to offer more names of common court documents that a person might check off (family, probate and civil)
 #Offer the name of defendant and their address on first screen of id: gather info on people receiving service
+#Add other parties to the defendant field of the PDF
 
 ---
 include:
@@ -53,7 +54,7 @@ code: |
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - other_parties: ALPeopleList.using(ask_number=True,target_number=1)
+  - other_parties: ALPeopleList.using(ask_number=True, complete_attribute='address.address')
   - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
@@ -76,13 +77,15 @@ code: |
   nav.set_section("review_VTCertificateOfService")
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
+
+  other_parties.gather()
   docket_number
   trial_court_division
   set_progress(20)
   users.gather()
   user_has_lawyer
   set_parts(subtitle=str(users))
-  other_parties[0].name.last
+
   set_progress(40)
   divorcesc
   document1_name
@@ -199,18 +202,26 @@ fields:
     show if: user_has_lawyer
 ---
 ---
-id: gather defendant name
-sets:
-  - other_parties[0].name.first
-  - other_parties[0].name.last
+id: how many other parties
 question: |
-  Name of the other party
+  The other party that you will serve papers to
 fields:
-  - First Name: other_parties[0].name.first
-  - Middle Name: other_parties[0].name.middle
+  - How many defendants/other parties in all?: other_parties.target_number
+    datatype: integer
+---  
+id: gather other parties info
+sets:
+  - other_parties[i].name.first
+  - other_parties[i].name.last
+  - other_parties[i].address.address  
+question: |
+  About the **${ ordinal(i) }** other party that you will serve papers to
+fields:
+  - First Name: other_parties[i].name.first
+  - Middle Name: other_parties[i].name.middle
     required: False
-  - Last Name: other_parties[0].name.last
-  - Suffix: other_parties[0].name.suffix
+  - Last Name: other_parties[i].name.last
+  - Suffix: other_parties[i].name.suffix
     choices: 
       - Jr
       - Sr
@@ -218,6 +229,14 @@ fields:
       - II
       - III
     required: False
+  - note: |
+      ---
+  - Address: other_parties[i].address.address
+  - Unit: other_parties[i].address.unit
+  - City: other_parties[i].address.city
+  - State: other_parties[i].address.state
+  - Zip code: other_parties[i].address.zip
+
 
 ---
 id: family documents serving to other party
@@ -632,7 +651,7 @@ attachment:
       - "users1_name": ${ users[0] }
       - "other_parties1_name": ${ other_parties[0] }
 
-      - "document1_name": |
+      - "documents_list": |
           % if divorcesc:
             * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
           % endif
