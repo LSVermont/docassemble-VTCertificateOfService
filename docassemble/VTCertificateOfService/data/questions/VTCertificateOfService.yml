@@ -1,11 +1,12 @@
+#The checkboxes area is not not working right
 #On the review screen, need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
-#How can I  reconsider the documents list so people can add or subtract things from their original list?
+#How can I  reconsider the documents list so people can add or subtract things from their original list and also reconsider the info on people who are being served?
 #Add overflow for the documents list -- have room for 6 documents so make others go on overflow
 #Need an overflow addendum for served names and addresses
 #Can't edit everything in review screen, like I get an error when trying to edit the other delivery method
-#Need to offer more names of common court documents that a person might check off (family, probate and civil)
-#Offer the name of defendant and their address on first screen of id: gather info on people receiving service
-#Add other parties to the defendant field of the PDF
+#K needs to get more names of common court documents that a person might check off (family, probate and civil)
+#Add states list to state fields
+
 
 ---
 include:
@@ -238,6 +239,7 @@ fields:
     show if: other_parties[i].served
   - Unit: other_parties[i].address.unit
     show if: other_parties[i].served
+    required: False
   - City: other_parties[i].address.city
     show if: other_parties[i].served
   - State: other_parties[i].address.state
@@ -668,15 +670,8 @@ attachment:
       - "VS": "v."
       - "users1_name": ${ users[0] }
       - "other_parties1_name": |
-          % if other_parties.target_number == 1:
-          ${ other_parties[0] }
-          % endif
-          % if other_parties.target_number == 2:
-          ${ other_parties[0] } and ${ other_parties[1] } 
-          % endif
-          % if other_parties.target_number == 3:          
-          ${ other_parties[0] } and ${ other_parties[1] } and ${ other_parties[2] }
-          % endif
+          ${ other_parties.short_list(2) }
+
       - "documents_list": |
           % if divorcesc:
           - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
@@ -739,39 +734,32 @@ attachment:
       - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
 
       - "first_class_mail": |
-          % if other_parties[0].method == "first_class_mail":
-          True
-          % elif other_parties[1].method == "first_class_mail":
-          True
-          % elif other_parties[2].method == "first_class_mail":
-          True
-          % elif other_people_receiving_service[0].method == "first_class_mail":
-          True
-          % elif other_people_receiving_service[1].method == "first_class_mail":
-          True
-          % elif other_people_receiving_service[2].method == "first_class_mail":
-          True
+          % if other_people_receiving_service[0].method == "first_class_mail" or other_people_receiving_service[1].method == "first_class_mail" or other_people_receiving_service[2].method == "first_class_mail" or other_parties[0].method == "first_class_mail" or other_parties[1].method == "first_class_mail" or other_parties[2].method == "first_class_mail":
+          ${ True }
           % else:
-          False
+          ${ False }
           % endif
       - "personal_delivery": |
-          % if other_people_receiving_service[0].method == "personal_delivery" or other_people_receiving_service[1].method == "personal_delivery" or other_people_receiving_service[2].method == "personal_delivery" or other_parties[0].method == "personal_delivery" or other_parties[1].method == "personal_delivery" or other_parties[2].method == "personal_delivery":
-          True
-          % else:
-          False
-          % endif
+      
+          #I was trying this too because these fields are not working an I think it's because some things are not defined
+          #% if defined("other_parties[0].method"):
+          #% if other_parties[0].method == "personal_delivery":
           
-
+          % if other_people_receiving_service[0].method == "other_delivery" or other_people_receiving_service[1].method == "personal_delivery" or other_people_receiving_service[2].method == "personal_delivery" or other_parties[0].method == "personal_delivery" or other_parties[1].method == "personal_delivery" or other_parties[2].method == "personal_delivery":
+          ${ True }
+          % else:
+          ${ False }
+          % endif
+        
       - "other_delivery": |
           % if other_people_receiving_service[0].method == "other_delivery" or other_people_receiving_service[1].method == "other_delivery" or other_people_receiving_service[2].method == "other_delivery" or other_parties[0].method == "other_delivery" or other_parties[1].method == "other_delivery" or other_parties[2].method == "other_delivery":
-          True
+          ${ True }
           % else:
-          False
+          ${ False }
           % endif
-
       - "describe_other_delivery": ${ describe_other_delivery }
+      
       - "person_getting_delivery": |
-
           % if other_people_receiving_service[0].method == "personal_delivery":
           ${ other_people_receiving_service[0].name }
           % elif other_people_receiving_service[1].method == "personal_delivery":
