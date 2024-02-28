@@ -55,12 +55,12 @@ code: |
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
   - other_parties: ALPeopleList.using(ask_number=True, complete_attribute='address.address')
-  - people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
+  - other_people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
 code: |
-  people_receiving_service[i].method
-  people_receiving_service[i].complete = True
+  other_people_receiving_service[i].method
+  other_people_receiving_service[i].complete = True
 ---
 # customized feedback form
 code: |   
@@ -89,7 +89,7 @@ code: |
   set_progress(40)
   divorcesc
   document1_name
-  people_receiving_service.gather()
+  other_people_receiving_service.gather()
   signature_date
   #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
   trial_court.address.county
@@ -342,22 +342,22 @@ generic object: DAList
 question: |
   Number of people you will serve
 fields: 
-  - How many people will you send or give the documents to?: people_receiving_service.target_number
+  - Besides the other parties / defendants, how many other people will you send or give the documents to?: other_people_receiving_service.target_number
     datatype: integer
 ---
 id: gather info on people receiving service
 generic object: DAList
 question: |
-  % if hasattr(people_receiving_service, 'ask_number') and people_receiving_service.ask_number and people_receiving_service.target_number == 1:
+  % if hasattr(other_people_receiving_service, 'ask_number') and other_people_receiving_service.ask_number and other_people_receiving_service.target_number == 1:
   The person you are serving
   % else:
   The **${ ordinal(i) }** person you are serving
   % endif
   
 fields:
-  - Their name: people_receiving_service[i].name
+  - Their name: other_people_receiving_service[i].name
     maxlength: 40
-  - How you will serve them: people_receiving_service[i].method
+  - How you will serve them: other_people_receiving_service[i].method
     datatype: radio
     choices: 
       - First-class US mail: first_class_mail
@@ -366,9 +366,9 @@ fields:
   - What is the other way you will serve the documents?: describe_other_delivery
     maxlength: 40
     show if:
-      variable: people_receiving_service[i].method
+      variable: other_people_receiving_service[i].method
       is: other_delivery
-  - Their address: people_receiving_service[i].address
+  - Their address: other_people_receiving_service[i].address
     datatype: object_radio
     choices:
       - other_parties[0].address if defined("other_parties[0].address.address") else None
@@ -507,11 +507,11 @@ review:
       % endif
 
 
-  - Edit: people_receiving_service.revisit
+  - Edit: other_people_receiving_service.revisit
     button: |-
       About the people you are serving the documents to (edit name, address, delivery method):
 
-      % for item in people_receiving_service:
+      % for item in other_people_receiving_service:
       * **${ item }**
       % endfor
   - Edit: describe_other_delivery
@@ -524,17 +524,17 @@ review:
       Date of signature:
       **${ format_date(signature_date, format='M/d/yyyy') }**
 ---
-continue button field: people_receiving_service.revisit
+continue button field: other_people_receiving_service.revisit
 question: |
   Edit the people being served
 
 subquestion: |
-  ${ people_receiving_service.table }
+  ${ other_people_receiving_service.table }
 
-  ${ people_receiving_service.add_action() }
+  ${ other_people_receiving_service.add_action() }
 ---
-table: people_receiving_service.table
-rows: people_receiving_service
+table: other_people_receiving_service.table
+rows: other_people_receiving_service
 columns:
   - Name: |
       row_item.name.full() if defined("row_item.name") else ""
@@ -680,73 +680,73 @@ attachment:
           - ${ showifdef("document4_name") }
           % endif
       - "people_receiving_service": |
-          % for item in people_receiving_service:
+          % for item in other_people_receiving_service:
             * ${ item }
           % endfor
-      - "people_receiving_service_name_1": "- ${ people_receiving_service[0].name }"
-      - "people_receiving_service_address_1": "- ${ people_receiving_service[0].address }"
-      - "people_receiving_service_name_2": "- ${ people_receiving_service[1].name }"
-      - "people_receiving_service_address_2": "- ${ people_receiving_service[1].address }"
-      - "people_receiving_service_name_3": "- ${ people_receiving_service[2].name }"
-      - "people_receiving_service_address_3": "- ${ people_receiving_service[2].address }"
-      - "people_receiving_service_name_4": "- ${ people_receiving_service[3].name }"
-      - "people_receiving_service_address_4": "- ${ people_receiving_service[3].address }"
-      - "people_receiving_service_name_5": "- ${ people_receiving_service[4].name }"
-      - "people_receiving_service_address_5": "- ${ people_receiving_service[4].address }"
+      - "people_receiving_service_name_1": "- ${ other_people_receiving_service[0].name }"
+      - "people_receiving_service_address_1": "- ${ other_people_receiving_service[0].address }"
+      - "people_receiving_service_name_2": "- ${ other_people_receiving_service[1].name }"
+      - "people_receiving_service_address_2": "- ${ other_people_receiving_service[1].address }"
+      - "people_receiving_service_name_3": "- ${ other_people_receiving_service[2].name }"
+      - "people_receiving_service_address_3": "- ${ other_people_receiving_service[2].address }"
+      - "people_receiving_service_name_4": "- ${ other_people_receiving_service[3].name }"
+      - "people_receiving_service_address_4": "- ${ other_people_receiving_service[3].address }"
+      - "people_receiving_service_name_5": "- ${ other_people_receiving_service[4].name }"
+      - "people_receiving_service_address_5": "- ${ other_people_receiving_service[4].address }"
       - "first_class_mail": |
-          % if people_receiving_service[0].method == "first_class_mail":
+          % if other_people_receiving_service[0].method == "first_class_mail":
           True
-          % elif people_receiving_service[1].method == "first_class_mail":
+          % elif other_people_receiving_service[1].method == "first_class_mail":
           True
-          % elif people_receiving_service[2].method == "first_class_mail":
+          % elif other_people_receiving_service[2].method == "first_class_mail":
           True
-          % elif people_receiving_service[3].method == "first_class_mail":
+          % elif other_people_receiving_service[3].method == "first_class_mail":
           True
-          % elif people_receiving_service[4].method == "first_class_mail":
+          % elif other_people_receiving_service[4].method == "first_class_mail":
           True
           % else:
           False
           % endif
       - "personal_delivery": |
-          % if people_receiving_service[0].method == "personal_delivery":
+          % if other_people_receiving_service[0].method == "personal_delivery":
           True
-          % elif people_receiving_service[1].method == "personal_delivery":
+          % elif other_people_receiving_service[1].method == "personal_delivery":
           True
-          % elif people_receiving_service[2].method == "personal_delivery":
+          % elif other_people_receiving_service[2].method == "personal_delivery":
           True
-          % elif people_receiving_service[3].method == "personal_delivery":
+          % elif other_people_receiving_service[3].method == "personal_delivery":
           True
-          % elif people_receiving_service[4].method == "personal_delivery":
+          % elif other_people_receiving_service[4].method == "personal_delivery":
           True
           % else:
           False
           % endif
       - "other_delivery": |
-          % if people_receiving_service[0].method == "other_delivery":
+          % if other_people_receiving_service[0].method == "other_delivery":
           True
-          % elif people_receiving_service[1].method == "other_delivery":
+          % elif other_people_receiving_service[1].method == "other_delivery":
           True
-          % elif people_receiving_service[2].method == "other_delivery":
+          % elif other_people_receiving_service[2].method == "other_delivery":
           True
-          % elif people_receiving_service[3].method == "other_delivery":
+          % elif other_people_receiving_service[3].method == "other_delivery":
           True
-          % elif people_receiving_service[4].method == "other_delivery":
+          % elif other_people_receiving_service[4].method == "other_delivery":
           True
           % else:
           False
           % endif
       - "describe_other_delivery": ${ describe_other_delivery }
       - "person_getting_delivery": |
-          % if people_receiving_service[0].method == "personal_delivery":
-          ${ people_receiving_service[0] }
-          % elif people_receiving_service[1].method == "personal_delivery":
-          ${ people_receiving_service[1] }
-          % elif people_receiving_service[2].method == "personal_delivery":
-          ${ people_receiving_service[2].name }
+          % if other_people_receiving_service[0].method == "personal_delivery":
+          ${ other_people_receiving_service[0] }
+          % elif other_people_receiving_service[1].method == "personal_delivery":
+          ${ other_people_receiving_service[1] }
+          % elif other_people_receiving_service[2].method == "personal_delivery":
+          ${ other_people_receiving_service[2].name }
           % elif people_receiving_service[3].method == "personal_delivery":
-          ${ people_receiving_service[3].name }
+          ${ other_people_receiving_service[3].name }
           % elif people_receiving_service[4].method == "personal_delivery":
-          ${ people_receiving_service[4].name }          
+          ${ other_people_receiving_service[4].name }          
           % endif
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
