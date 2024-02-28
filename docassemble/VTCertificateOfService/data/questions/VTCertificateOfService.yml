@@ -1,9 +1,9 @@
 #Need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
-#How can I  reconsider("document1 name") so people can add or subtract things from their original list?
-#Add overflow for the documents list -- have room for 6 documents so make others go on overflow?
-#Can't edit everything in review screen
-#Need to offer more names of common court documents that a person might check off (family, probate and civil).
+#How can I  reconsider the documents list so people can add or subtract things from their original list?
+#Add overflow for the documents list -- have room for 6 documents so make others go on overflow
 #Need an overflow addendum for served names and addresses
+#Can't edit everything in review screen, like I get an error when trying to edit the other delivery method
+#Need to offer more names of common court documents that a person might check off (family, probate and civil)
 #Offer the name of defendant and their address on first screen of id: gather info on people receiving service
 
 ---
@@ -349,8 +349,17 @@ fields:
     show if:
       variable: people_receiving_service[i].method
       is: other_delivery
-  - Their address -- on one line: people_receiving_service[i].address
-    maxlength: 80
+  - Their address: people_receiving_service[i].address
+    datatype: object_radio
+    choices:
+      - other_parties[0].address if defined("other_parties[0].address.address") else None
+    show if:
+      code: |
+        defined("other_parties[0].address.address")
+  - Enter their address on one line: a_different_address
+    required: False
+    maxlength: 80 
+
 
 ---
 id: preview VTCertificateOfService
@@ -623,7 +632,7 @@ attachment:
       - "users1_name": ${ users[0] }
       - "other_parties1_name": ${ other_parties[0] }
 
-      - "document1_name": |
+      - "documents_list": |
           % if divorcesc:
             * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
           % endif
