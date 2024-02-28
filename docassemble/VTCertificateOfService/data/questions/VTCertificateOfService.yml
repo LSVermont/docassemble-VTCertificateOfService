@@ -54,7 +54,7 @@ code: |
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True,target_number=1)
-  - other_parties: ALPeopleList.using(ask_number=True, complete_attribute='name.last')
+  - other_parties: ALPeopleList.using(ask_number=True, complete_attribute='served')
   - other_people_receiving_service: DAList.using(object_type=Thing, ask_number=True, complete_attribute='complete')
   
 ---
@@ -472,9 +472,10 @@ review:
       % endif
   - Edit: other_parties.revisit
     button: |
-      Other party in this case:
+      About the other party/parties in this case (edit name, service information, and address (if applicable)):
       % for item in other_parties:
-      **${ item }**
+      
+      * **${ item }**
       % endfor
   - Edit: divorcesc
     button: |
@@ -591,9 +592,15 @@ table: other_parties.table
 rows: other_parties
 columns:
   - Name: |
-      row_item.name.full() if defined("row_item.name.first") else ""
+      row_item.name.full() if defined("row_item.name") else ""
+  - Address: |
+      row_item.address if defined("row_item.address") else ""
+  - How serving them: |
+      row_item.method if defined("row_item.method") else ""  
 edit:
   - name.first
+  - address
+  - method
 confirm: True
 
 ---
@@ -672,7 +679,7 @@ attachment:
           % endif
       - "documents_list": |
           % if divorcesc:
-            * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+          - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
           % endif
           % if divorcesckids:
           - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
@@ -732,59 +739,51 @@ attachment:
       - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
 
       - "first_class_mail": |
-          % if other_people_receiving_service[0].method == "first_class_mail":
+          % if other_parties[0].method == "first_class_mail":
+          True
+          % elif other_parties[1].method == "first_class_mail":
+          True
+          % elif other_parties[2].method == "first_class_mail":
+          True
+          % elif other_people_receiving_service[0].method == "first_class_mail":
           True
           % elif other_people_receiving_service[1].method == "first_class_mail":
           True
           % elif other_people_receiving_service[2].method == "first_class_mail":
           True
-          % elif other_people_receiving_service[3].method == "first_class_mail":
-          True
-          % elif other_people_receiving_service[4].method == "first_class_mail":
-          True
           % else:
           False
           % endif
       - "personal_delivery": |
-          % if other_people_receiving_service[0].method == "personal_delivery":
-          True
-          % elif other_people_receiving_service[1].method == "personal_delivery":
-          True
-          % elif other_people_receiving_service[2].method == "personal_delivery":
-          True
-          % elif other_people_receiving_service[3].method == "personal_delivery":
-          True
-          % elif other_people_receiving_service[4].method == "personal_delivery":
+          % if other_people_receiving_service[0].method == "personal_delivery" or other_people_receiving_service[1].method == "personal_delivery" or other_people_receiving_service[2].method == "personal_delivery" or other_parties[0].method == "personal_delivery" or other_parties[1].method == "personal_delivery" or other_parties[2].method == "personal_delivery":
           True
           % else:
           False
           % endif
+          
+
       - "other_delivery": |
-          % if other_people_receiving_service[0].method == "other_delivery":
-          True
-          % elif other_people_receiving_service[1].method == "other_delivery":
-          True
-          % elif other_people_receiving_service[2].method == "other_delivery":
-          True
-          % elif other_people_receiving_service[3].method == "other_delivery":
-          True
-          % elif other_people_receiving_service[4].method == "other_delivery":
+          % if other_people_receiving_service[0].method == "other_delivery" or other_people_receiving_service[1].method == "other_delivery" or other_people_receiving_service[2].method == "other_delivery" or other_parties[0].method == "other_delivery" or other_parties[1].method == "other_delivery" or other_parties[2].method == "other_delivery":
           True
           % else:
           False
           % endif
+
       - "describe_other_delivery": ${ describe_other_delivery }
       - "person_getting_delivery": |
+
           % if other_people_receiving_service[0].method == "personal_delivery":
-          ${ other_people_receiving_service[0] }
+          ${ other_people_receiving_service[0].name }
           % elif other_people_receiving_service[1].method == "personal_delivery":
-          ${ other_people_receiving_service[1] }
+          ${ other_people_receiving_service[1].name }
           % elif other_people_receiving_service[2].method == "personal_delivery":
-          ${ other_people_receiving_service[2].name }
-          % elif people_receiving_service[3].method == "personal_delivery":
-          ${ other_people_receiving_service[3].name }
-          % elif people_receiving_service[4].method == "personal_delivery":
-          ${ other_people_receiving_service[4].name }          
+          ${ other_people_receiving_service[2].name }    
+          % elif other_parties[0].method == "personal_delivery":
+          ${ other_parties[0] }
+          % elif other_parties[1].method == "personal_delivery":
+          ${ other_parties[1] }
+          % elif other_parties[2].method == "personal_delivery":
+          ${ other_parties[2] }
           % endif
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
