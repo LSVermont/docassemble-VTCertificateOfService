@@ -214,6 +214,7 @@ sets:
   - other_parties[i].name.first
   - other_parties[i].name.last
   - other_parties[i].address.address  
+  - other_parties[i].served
 question: |
   About the **${ ordinal(i) }** defendant
 fields:
@@ -689,20 +690,39 @@ attachment:
           % if document4_name != '':
           - ${ showifdef("document4_name") }
           % endif
-      - "people_receiving_service": |
-          % for item in other_people_receiving_service:
-            * ${ item }
-          % endfor
-      - "people_receiving_service_name_1": "- ${ other_people_receiving_service[0].name }"
-      - "people_receiving_service_address_1": "- ${ other_people_receiving_service[0].address }"
-      - "people_receiving_service_name_2": "- ${ other_people_receiving_service[1].name }"
-      - "people_receiving_service_address_2": "- ${ other_people_receiving_service[1].address }"
-      - "people_receiving_service_name_3": "- ${ other_people_receiving_service[2].name }"
-      - "people_receiving_service_address_3": "- ${ other_people_receiving_service[2].address }"
-      - "people_receiving_service_name_4": "- ${ other_people_receiving_service[3].name }"
-      - "people_receiving_service_address_4": "- ${ other_people_receiving_service[3].address }"
-      - "people_receiving_service_name_5": "- ${ other_people_receiving_service[4].name }"
-      - "people_receiving_service_address_5": "- ${ other_people_receiving_service[4].address }"
+
+
+      - "people_receiving_service_name_1": |
+          % if other_parties[0].served == True:
+          - ${ other_parties[0] }
+          % endif
+      - "people_receiving_service_address_1":  |
+          % if other_parties[0].served == True:
+          - ${ other_parties[0].address.on_one_line() }
+          % endif
+      - "people_receiving_service_name_2": |
+          % if other_parties[1].served == True:
+          - ${ other_parties[1] }
+          % endif
+      - "people_receiving_service_address_2":  |
+          % if other_parties[1].served == True:
+          - ${ other_parties[1].address.on_one_line() }
+          % endif
+      - "people_receiving_service_name_3": |
+          % if other_parties[2].served == True:
+          - ${ other_parties[2] }
+          % endif
+      - "people_receiving_service_address_3":  |
+          % if other_parties[2].served == True:
+          - ${ other_parties[2].address.on_one_line() }
+          % endif
+      - "people_receiving_service_name_4": "- ${ other_people_receiving_service[0].name }"
+      - "people_receiving_service_address_4": "- ${ other_people_receiving_service[0].address }"
+      - "people_receiving_service_name_5": "- ${ other_people_receiving_service[1].name }"
+      - "people_receiving_service_address_5": "- ${ other_people_receiving_service[1].address }"
+      - "people_receiving_service_name_6": "- ${ other_people_receiving_service[2].name }"
+      - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
+
       - "first_class_mail": |
           % if other_people_receiving_service[0].method == "first_class_mail":
           True
