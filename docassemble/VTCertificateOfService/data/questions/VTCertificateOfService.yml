@@ -660,8 +660,16 @@ attachment:
       - "trial_court_county": ${(trial_court.address.county)}
       - "VS": "v."
       - "users1_name": ${ users[0] }
-      - "other_parties1_name": ${ other_parties[0] }
-
+      - "other_parties1_name": |
+          % if other_parties.target_number == 1:
+          ${ other_parties[0] }
+          % endif
+          % if other_parties.target_number == 2:
+          ${ other_parties[0] } and ${ other_parties[1] } 
+          % endif
+          % if other_parties.target_number == 3:          
+          ${ other_parties[0] } and ${ other_parties[1] } and ${ other_parties[2] }
+          % endif
       - "documents_list": |
           % if divorcesc:
             * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
