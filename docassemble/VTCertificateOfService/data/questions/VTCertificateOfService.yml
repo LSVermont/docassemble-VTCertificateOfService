@@ -1,13 +1,4 @@
-#The checkboxes area is not not working right
-#On the review screen, need to show descriptive labels for this   - How serving them: |     row_item.method if defined("row_item.method") else ""
-#How can I  reconsider the documents list so people can add or subtract things from their original list and also reconsider the info on people who are being served?
-#Add overflow for the documents list -- have room for 6 documents so make others go on overflow
-#Need an overflow addendum for served names and addresses
-#Can't edit everything in review screen, like I get an error when trying to edit the other delivery method
-#K needs to get more names of common court documents that a person might check off (family, probate and civil)
-#Add states list to state fields
-
-
+#Note: This interview currently assumes the user is the plaintiff.
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -85,13 +76,10 @@ code: |
   trial_court_division
   set_progress(20)
   users.gather()
-  user_has_lawyer
-  set_parts(subtitle=str(users))
-
+  user_has_attorney
   set_progress(40)
   divorcesc
   document1_name
-
   signature_date
   #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
   trial_court.address.county
@@ -118,6 +106,15 @@ code: |
       },
   )
   VTCertificateOfService_download
+---
+sections:
+  - intro: Introduction
+  - about: About the plaintiff
+  - defendant: About the defendant
+  - documents_served: Documents being served
+  - review: Edit your answers
+  - sign: Signature
+  - get_docs: Get your documents
 ---
 id: basic questions intro screen
 decoration: form-lineal
@@ -197,11 +194,11 @@ id: does user have a lawyer
 question: |
   Do you have a lawyer working with you on this case?
 fields:
-  - no label: user_has_lawyer
+  - no label: user_has_attorney
     datatype: yesnoradio
   - "Your lawyer's name": users1_attorneys_name
     maxlength: 38
-    show if: user_has_lawyer
+    show if: user_has_attorney
 ---
 id: how many other parties
 question: |
@@ -217,7 +214,13 @@ sets:
   - other_parties[i].address.address  
   - other_parties[i].served
 question: |
+  % if other_parties.target_number == 1:
+  About the defendant / other party
+  % elif other_parties.target_number > 1:
   About the **${ ordinal(i) }** defendant
+  % else:
+  About the defendant / other party
+  % endif
 fields:
   - First Name: other_parties[i].name.first
   - Middle Name: other_parties[i].name.middle
@@ -243,6 +246,9 @@ fields:
   - City: other_parties[i].address.city
     show if: other_parties[i].served
   - State: other_parties[i].address.state
+    code: |
+      states_list()
+    default: VT
     show if: other_parties[i].served
   - Zip code: other_parties[i].address.zip
     show if: other_parties[i].served
@@ -265,8 +271,14 @@ id: how many other people will receive service
 generic object: DAList
 question: |
   Number of other people you will serve
+subquestion: |
+  % if other_parties.target_number > 1:
+  Besides the defendants, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
+  % else:
+  Besides the defendants, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
+  % endif
 fields: 
-  - Besides the defendant(s), how many **other** people are you serving documents to? (Example - a lawyer): other_people_receiving_service.target_number
+  - How many **other** people are you serving?: other_people_receiving_service.target_number
     datatype: integer
 ---
 id: gather info on people receiving service
@@ -296,7 +308,7 @@ fields:
     maxlength: 80 
 
 ---
-id: family documents serving to other party
+id: documents serving to other party
 question: |
   Documents you are serving to the other party
 fields:
@@ -461,15 +473,15 @@ review:
       % endif
   - Edit: users.revisit
     button: |
-      You and your signature:
+      About the plaintiff:
       % for item in users:
       **${ item }**
       % endfor
-  - Edit: user_has_lawyer
+  - Edit: user_has_attorney
     button: |
-      Have a lawyer working with you on this case?
-      **${ word(yesno(user_has_lawyer)) }** 
-      % if user_has_lawyer:
+      Does plaintiff have a lawyer for this case?
+      **${ word(yesno(user_has_attorney)) }** 
+      % if user_has_attorney:
       ; **${ showifdef("users1_attorneys_name") }**
       % endif
   - Edit: other_parties.revisit
@@ -479,6 +491,18 @@ review:
       
       * **${ item }**
       % endfor
+  - Edit: other_people_receiving_service.revisit
+    button: |-
+      About the other people you are serving the documents to (edit name, address, delivery method):
+
+      % for item in other_people_receiving_service:
+      * **${ item }**
+      % endfor
+  - Edit: describe_other_delivery
+    button: |
+      Describe the other delivery method you mentioned:
+      **${ describe_other_delivery }**
+
   - Edit: divorcesc
     button: |
 
@@ -520,19 +544,6 @@ review:
       * ${ showifdef("document4_name") }
       % endif
 
-
-  - Edit: other_people_receiving_service.revisit
-    button: |-
-      About the people you are serving the documents to (edit name, address, delivery method):
-
-      % for item in other_people_receiving_service:
-      * **${ item }**
-      % endfor
-  - Edit: describe_other_delivery
-    button: |
-      Describe the other delivery method you mentioned:
-      **${ describe_other_delivery }**
-
   - Edit: signature_date
     button: |
       Date of signature:
@@ -540,7 +551,7 @@ review:
 ---
 continue button field: other_people_receiving_service.revisit
 question: |
-  Edit the people being served
+  Edit the other people being served
 
 subquestion: |
   ${ other_people_receiving_service.table }
@@ -667,8 +678,8 @@ attachment:
           % endif
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${(trial_court.address.county)}
-      - "VS": "v."
       - "users1_name": ${ users[0] }
+      - "VS": "v."
       - "other_parties1_name": |
           ${ other_parties.short_list(2) }
 
@@ -680,13 +691,13 @@ attachment:
           - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
           % endif
           % if noa:
-          - Notice of Appearance
+          - Notice of Appearance for Self-Represented Party - form 400-00831
           % endif
           % if faminfo:
           - Family Court Information Sheet - form 800
           % endif
           % if divorcestip:
-          - Divorce stipulation
+          - Divorce / Dissolution stipulation (agreement)
           % endif
           % if document1_name != '':
           - ${ showifdef("document1_name") }
@@ -732,7 +743,7 @@ attachment:
       - "people_receiving_service_address_5": "- ${ other_people_receiving_service[1].address }"
       - "people_receiving_service_name_6": "- ${ other_people_receiving_service[2].name }"
       - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
-
+      #we probably should allow for more and have them overflow
       - "first_class_mail": |
           % if other_people_receiving_service[0].method == "first_class_mail" or other_people_receiving_service[1].method == "first_class_mail" or other_people_receiving_service[2].method == "first_class_mail" or other_parties[0].method == "first_class_mail" or other_parties[1].method == "first_class_mail" or other_parties[2].method == "first_class_mail":
           ${ True }
