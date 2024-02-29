@@ -76,7 +76,7 @@ code: |
   trial_court_division
   set_progress(20)
   users.gather()
-  user_has_lawyer
+  user_has_attorney
   set_progress(40)
   divorcesc
   document1_name
@@ -194,11 +194,11 @@ id: does user have a lawyer
 question: |
   Do you have a lawyer working with you on this case?
 fields:
-  - no label: user_has_lawyer
+  - no label: user_has_attorney
     datatype: yesnoradio
   - "Your lawyer's name": users1_attorneys_name
     maxlength: 38
-    show if: user_has_lawyer
+    show if: user_has_attorney
 ---
 id: how many other parties
 question: |
@@ -477,11 +477,11 @@ review:
       % for item in users:
       **${ item }**
       % endfor
-  - Edit: user_has_lawyer
+  - Edit: user_has_attorney
     button: |
       Does plaintiff have a lawyer for this case?
-      **${ word(yesno(user_has_lawyer)) }** 
-      % if user_has_lawyer:
+      **${ word(yesno(user_has_attorney)) }** 
+      % if user_has_attorney:
       ; **${ showifdef("users1_attorneys_name") }**
       % endif
   - Edit: other_parties.revisit
