@@ -5,7 +5,7 @@
 #Need an overflow addendum for served names and addresses
 #Can't edit everything in review screen, like I get an error when trying to edit the other delivery method
 #K needs to get more names of common court documents that a person might check off (family, probate and civil)
-#Add states list to state fields
+
 
 
 ---
@@ -217,7 +217,13 @@ sets:
   - other_parties[i].address.address  
   - other_parties[i].served
 question: |
+  % if other_parties.target_number == 1:
+  About the defendant / other party
+  % elif other_parties.target_number > 1:
   About the **${ ordinal(i) }** defendant
+  % else:
+  About the defendant / other party
+  % endif
 fields:
   - First Name: other_parties[i].name.first
   - Middle Name: other_parties[i].name.middle
@@ -243,6 +249,9 @@ fields:
   - City: other_parties[i].address.city
     show if: other_parties[i].served
   - State: other_parties[i].address.state
+    code: |
+      states_list()
+    default: VT
     show if: other_parties[i].served
   - Zip code: other_parties[i].address.zip
     show if: other_parties[i].served
@@ -265,8 +274,14 @@ id: how many other people will receive service
 generic object: DAList
 question: |
   Number of other people you will serve
+subquestion: |
+  % if other_parties.target_number > 1:
+  Besides the defendants, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
+  % else:
+  Besides the defendants, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
+  % endif
 fields: 
-  - Besides the defendant(s), how many **other** people are you serving documents to? (Example - a lawyer): other_people_receiving_service.target_number
+  - How many **other** people are you serving?: other_people_receiving_service.target_number
     datatype: integer
 ---
 id: gather info on people receiving service
