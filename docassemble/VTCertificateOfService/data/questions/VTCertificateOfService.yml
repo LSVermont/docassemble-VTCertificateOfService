@@ -239,6 +239,7 @@ fields:
   - I am serving (sending or delivering) documents to them: other_parties[i].served
     datatype: yesnoradio
   - Address: other_parties[i].address.address
+    address autocomplete: True
     show if: other_parties[i].served
   - Unit: other_parties[i].address.unit
     show if: other_parties[i].served
