@@ -713,14 +713,11 @@ attachment:
           % endif
 
 
-      - "people_receiving_service_name_1": |
+      - "people_receiving_service_list": |
           % if other_parties[0].served == True:
-          - ${ other_parties[0] }
+          - ${ other_parties[0] }, ${ other_parties[0].address.on_one_line() }
           % endif
-      - "people_receiving_service_address_1":  |
-          % if other_parties[0].served == True:
-          - ${ other_parties[0].address.on_one_line() }
-          % endif
+
       - "people_receiving_service_name_2": |
           % if other_parties[1].served == True:
           - ${ other_parties[1] }
