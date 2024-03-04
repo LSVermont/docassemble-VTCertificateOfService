@@ -450,9 +450,12 @@ question: |
 subquestion: |  
   ${ review_screen_instructions }
 review:
-  - Edit: trial_court_index
+  - Edit: 
+    - trial_court_division
+    - recompute:
+      - trial_court
     button: |
-      Your court case is in: **${(trial_court.address.county)} County**
+      Your court case is in: **${( trial_court.address.county )} County**
       
       In this court division:
       % if trial_court_division == "family":
