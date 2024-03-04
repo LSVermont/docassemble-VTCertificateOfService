@@ -721,29 +721,33 @@ attachment:
           % if other_parties[0].served == True:
           - ${ other_parties[0] }, ${ other_parties[0].address.on_one_line() }
           % endif
-
-      - "people_receiving_service_name_2": |
-          % if other_parties[1].served == True:
-          - ${ other_parties[1] }
+          % if defined("other_parties[1]") and other_parties[1].served == True:
+          - ${ other_parties[1] }, ${ other_parties[1].address.on_one_line() }
           % endif
-      - "people_receiving_service_address_2":  |
-          % if other_parties[1].served == True:
-          - ${ other_parties[1].address.on_one_line() }
-          % endif
-      - "people_receiving_service_name_3": |
-          % if other_parties[2].served == True:
-          - ${ other_parties[2] }
-          % endif
-      - "people_receiving_service_address_3":  |
-          % if other_parties[2].served == True:
+          % if defined("other_parties[2]") and other_parties[2].served == True:
           - ${ other_parties[2].address.on_one_line() }
           % endif
-      - "people_receiving_service_name_4": "- ${ other_people_receiving_service[0].name }"
-      - "people_receiving_service_address_4": "- ${ other_people_receiving_service[0].address }"
-      - "people_receiving_service_name_5": "- ${ other_people_receiving_service[1].name }"
-      - "people_receiving_service_address_5": "- ${ other_people_receiving_service[1].address }"
-      - "people_receiving_service_name_6": "- ${ other_people_receiving_service[2].name }"
-      - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
+          % if defined("other_parties[3]") and other_parties[3].served == True:
+          - ${ other_parties[3] }
+          % endif
+          % if defined("other_parties[4]") and other_parties[4].served == True:
+          - ${ other_parties[4] }
+          % endif
+          % if defined("other_people_receiving_service[0]"):
+          - ${ other_people_receiving_service[0].name }, ${ other_people_receiving_service[0].address }
+          % endif
+          % if defined("other_people_receiving_service[1]"):
+          - ${ other_people_receiving_service[1].name }, ${ other_people_receiving_service[1].address }
+          % endif
+          % if defined("other_people_receiving_service[2]"):
+          - ${ other_people_receiving_service[2].name }, ${ other_people_receiving_service[2].address }
+          % endif
+          % if defined("other_people_receiving_service[3]"):
+          - ${ other_people_receiving_service[3].name }, ${ other_people_receiving_service[3].address }
+          % endif
+          % if defined("other_people_receiving_service[4]"):
+          - ${ other_people_receiving_service[4].name }, ${ other_people_receiving_service[4].address }
+          % endif          
 
       - "first_class_mail": |
           ${ any(other.method == "first_class_mail" for other in other_people_receiving_service) or any(other_party.method == "first_class_mail" for other_party in other_parties) }
