@@ -744,47 +744,21 @@ attachment:
       - "people_receiving_service_address_5": "- ${ other_people_receiving_service[1].address }"
       - "people_receiving_service_name_6": "- ${ other_people_receiving_service[2].name }"
       - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
-      #we probably should allow for more and have them overflow
+
       - "first_class_mail": |
-          % if other_people_receiving_service[0].method == "first_class_mail" or other_people_receiving_service[1].method == "first_class_mail" or other_people_receiving_service[2].method == "first_class_mail" or other_parties[0].method == "first_class_mail" or other_parties[1].method == "first_class_mail" or other_parties[2].method == "first_class_mail":
-          ${ True }
-          % else:
-          ${ False }
-          % endif
-      - "personal_delivery": |
-      
-          #I was trying this too because these fields are not working an I think it's because some things are not defined
-          #% if defined("other_parties[0].method"):
-          #% if other_parties[0].method == "personal_delivery":
+          ${ any(other.method == "first_class_mail" for other in other_people_receiving_service) or any(other_party.method == "first_class_mail" for other_party in other_parties) }
           
-          % if other_people_receiving_service[0].method == "other_delivery" or other_people_receiving_service[1].method == "personal_delivery" or other_people_receiving_service[2].method == "personal_delivery" or other_parties[0].method == "personal_delivery" or other_parties[1].method == "personal_delivery" or other_parties[2].method == "personal_delivery":
-          ${ True }
-          % else:
-          ${ False }
-          % endif
-        
+      - "personal_delivery": |
+          ${ any(other.method == "personal_delivery" for other in other_people_receiving_service) or any(other_party.method == "personal_delivery" for other_party in other_parties) }
+          
       - "other_delivery": |
-          % if other_people_receiving_service[0].method == "other_delivery" or other_people_receiving_service[1].method == "other_delivery" or other_people_receiving_service[2].method == "other_delivery" or other_parties[0].method == "other_delivery" or other_parties[1].method == "other_delivery" or other_parties[2].method == "other_delivery":
-          ${ True }
-          % else:
-          ${ False }
-          % endif
+          ${ any(other.method == "other_delivery" for other in other_people_receiving_service) or any(other_party.method == "other_delivery" for other_party in other_parties) }
+
       - "describe_other_delivery": ${ describe_other_delivery }
       
       - "person_getting_delivery": |
-          % if other_people_receiving_service[0].method == "personal_delivery":
-          ${ other_people_receiving_service[0].name }
-          % elif other_people_receiving_service[1].method == "personal_delivery":
-          ${ other_people_receiving_service[1].name }
-          % elif other_people_receiving_service[2].method == "personal_delivery":
-          ${ other_people_receiving_service[2].name }    
-          % elif other_parties[0].method == "personal_delivery":
-          ${ other_parties[0] }
-          % elif other_parties[1].method == "personal_delivery":
-          ${ other_parties[1] }
-          % elif other_parties[2].method == "personal_delivery":
-          ${ other_parties[2] }
-          % endif
+          ${ next((person.name for person in other_people_receiving_service if person.method == "personal_delivery"), next((party for party in other_parties if party.method == "personal_delivery"), None)) }
+
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
       - "users1_name__1": ${ users[0] }
