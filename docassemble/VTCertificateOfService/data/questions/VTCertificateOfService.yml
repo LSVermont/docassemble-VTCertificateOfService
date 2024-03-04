@@ -746,11 +746,7 @@ attachment:
       - "people_receiving_service_address_6": "- ${ other_people_receiving_service[2].address }"
       #we probably should allow for more and have them overflow
       - "first_class_mail": |
-          % if other_people_receiving_service[0].method == "first_class_mail" or other_people_receiving_service[1].method == "first_class_mail" or other_people_receiving_service[2].method == "first_class_mail" or other_parties[0].method == "first_class_mail" or other_parties[1].method == "first_class_mail" or other_parties[2].method == "first_class_mail":
-          ${ True }
-          % else:
-          ${ False }
-          % endif
+          ${ True if True in [other.method == "first_class_mail" for other in other_people_receiving_service] or [other_party.method == "first_class_mail" for other_party in other_parties] else False }
       - "personal_delivery": |
       
           #I was trying this too because these fields are not working an I think it's because some things are not defined
