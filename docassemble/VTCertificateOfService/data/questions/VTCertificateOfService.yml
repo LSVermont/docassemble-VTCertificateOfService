@@ -58,32 +58,33 @@ code: |
 code: |   
   feedback_form = "docassemble.VTFeedback:VTfeedback.yml"
 ---
-sections:
-  - review_VTCertificateOfService: Review your answers
----
 #################### Interview order #####################
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VTCertificateOfService
 code: |
-  nav.set_section("review_VTCertificateOfService")
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
-
+  set_progress(5)
   other_parties.gather()
+  set_progress(20)
   other_people_receiving_service.gather()
+  set_progress(30)
   docket_number
   trial_court_division
-  set_progress(20)
+  set_progress(40)
   users.gather()
   user_has_attorney
-  set_progress(40)
+  set_progress(50)
   divorcesc
+  set_progress(70)
   document1_name
   signature_date
   #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
   trial_court.address.county
+  set_progress(80)
   VTCertificateOfService_preview_question
+  set_progress(90)
   al_form_requires_digital_signature = False
   basic_questions_signature_flow 
   interview_order_VTCertificateOfService = True
@@ -105,6 +106,7 @@ code: |
           "reached_interview_end": True,
       },
   )
+  set_progress(100)
   VTCertificateOfService_download
 ---
 sections:
@@ -160,11 +162,12 @@ subquestion: |
   
   It's important to know the rules for sending or delivering documents for your kind of case.
   
-  * [For family court cases: Read this information.](https://www.vermontjudiciary.org/family/divorce/serving-papers)
+  * For family court cases: [Read about serving papers for divorce and dissolution.](https://www.vermontjudiciary.org/family/divorce/serving-papers)
   
-  * For civil court cases:
+  * For civil court cases: [Read about serving papers on landlord-tenant cases](https://www.vermontjudiciary.org/civil/landlord-tenant) and [small claims cases](https://www.vermontjudiciary.org/civil/suing-and-being-sued) and [other civil cases](https://www.vermontjudiciary.org/civil).
   
-  * For probate cases:
+  
+  
   
 ---
 id: choose a court
