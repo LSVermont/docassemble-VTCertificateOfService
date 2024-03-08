@@ -4,7 +4,9 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
-
+---
+modules:
+  - docassemble.demo.accordion
 ---
 metadata:
   title: >-
@@ -166,9 +168,8 @@ subquestion: |
   
   * For civil court cases: [Read about serving papers on landlord-tenant cases](https://www.vermontjudiciary.org/civil/landlord-tenant) and [small claims cases](https://www.vermontjudiciary.org/civil/suing-and-being-sued) and [other civil cases](https://www.vermontjudiciary.org/civil).
   
-  
-  
-  
+  * If you are not sure, ask the [clerk at your local court.](https://www.vermontjudiciary.org/court-locations)
+
 ---
 id: choose a court
 question: |
@@ -317,12 +318,12 @@ question: |
   Documents you are serving to the other party
 fields:
   - note: |
-      Here are some popular court documents. Choose all that apply.
+      Here are some popular court documents. Choose all that you want to appear on the Certificate of Service form.
       
-      On the next screen, you can add more to the list of documents that will appear on the form.
+      On the next screen, you can add more to the list.
       
-  - note: |
-      **Family law cases**
+  - raw html: |
+      ${ start_accordion('Common family court documents', showing=True) }
   - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836: divorcesc
     datatype: yesno
     required: False
@@ -335,11 +336,28 @@ fields:
   - Family Court Information Sheet - form 800: faminfo
     datatype: yesno
     required: False
-  - Divorce / Dissolution stipulation (agreement): divorcestip
+  - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803: modchildsup
     datatype: yesno
     required: False
-  - note: |
-      **Civil law cases**
+  - Motion to Enforce Child Support and/or Maintenance Supplement - form 400-00823: enfchildsup 
+    datatype: yesno
+    required: False    
+  - Motion to Modify Parental Rights & Responsibilities & Parent Child Contact - form 400-00843: modprr
+    datatype: yesno
+    required: False    
+  - Motion to Enforce - form 400-00905: motionenforce
+    datatype: yesno
+    required: False    
+  - Affidavit - Family Division - form 400-00804: familyaffidavit
+    datatype: yesno
+    required: False   
+  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver
+    datatype: yesno
+    required: False
+  - raw html: |
+      ${ end_accordion() }      
+  - raw html: |
+      ${ start_accordion('Common civil court documents', showing=False) }
   - Small Claims Complaint – form 100-00257: smallclaimssc
     datatype: yesno
     required: False
@@ -352,13 +370,37 @@ fields:
   - Counterclaims: counterclaims
     datatype: yesno
     required: False
-  - note: |
-      **Probate law cases** 
-  - note: |
-      **Other** 
-  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver
+  - Motion - Civil Court - form 100-00053: civilmotion
+    datatype: yesno
+    required: False   
+  - Response to Motion - Civil Court - form 100-00020: civilrespmotion
+    datatype: yesno
+    required: False  
+  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver2
     datatype: yesno
     required: False
+  - raw html: |
+      ${ end_accordion() }  
+  - raw html: |
+      ${ start_accordion('Common probate court documents', showing=False) }
+  - Petition to Open Small Estate - form 700-00001SM: probpetsmest
+    datatype: yesno
+    required: False  
+  - Petition to Open Decedent's Estate - form 700-00001: probpetopenest
+    datatype: yesno
+    required: False  
+  - List of Interested Persons for Estates - form 700-00002E: probintpersons
+    datatype: yesno
+    required: False     
+  - Motion for License to Sell or Convey Real Estate - form 700-00035: problicsellre
+    datatype: yesno
+    required: False  
+  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver3
+    datatype: yesno
+    required: False
+  - raw html: |
+      ${ end_accordion() }  
+
 ---
 id: other documents serving to other party
 question: |
