@@ -316,14 +316,13 @@ fields:
 id: documents serving to other party
 question: |
   Documents you are serving to the other party
-fields:
-  - note: |
-      Here are some popular court documents. Choose all that you want to appear on the Certificate of Service form.
+subquestion: |
+  Here are some popular court documents. Choose all that you want to appear on the Certificate of Service form.
       
-      On the next screen, you can add more to the list.
-      
+  On the next screen, you can add more to the list.
+fields:      
   - raw html: |
-      ${ start_accordion('Common family court documents', showing=True) }
+      ${ start_accordion('Common family court documents') }
   - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836: divorcesc
     datatype: yesno
     required: False
@@ -354,10 +353,9 @@ fields:
   - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver
     datatype: yesno
     required: False
+   
   - raw html: |
-      ${ end_accordion() }      
-  - raw html: |
-      ${ start_accordion('Common civil court documents', showing=False) }
+      ${ next_accordion('Common civil court documents') }
   - Small Claims Complaint – form 100-00257: smallclaimssc
     datatype: yesno
     required: False
@@ -379,10 +377,9 @@ fields:
   - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver2
     datatype: yesno
     required: False
+
   - raw html: |
-      ${ end_accordion() }  
-  - raw html: |
-      ${ start_accordion('Common probate court documents', showing=False) }
+      ${ next_accordion('Common probate court documents') }
   - Petition to Open Small Estate - form 700-00001SM: probpetsmest
     datatype: yesno
     required: False  
@@ -732,7 +729,7 @@ attachment:
 
       - "documents_list": |
           % if divorcesc:
-          - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+          - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836"
           % endif
           % if divorcesckids:
           - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
