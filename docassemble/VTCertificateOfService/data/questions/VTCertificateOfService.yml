@@ -262,7 +262,7 @@ fields:
       - Personal delivery / hand delivery: personal_delivery
       - Another way: other_delivery
     show if: other_parties[i].served
-  - What is the other way you will serve the documents?: describe_other_delivery
+  - What is the other way you will serve the documents?: other_parties[i].describe_other_delivery
     maxlength: 40
     show if:
       variable: other_parties[i].method
@@ -300,7 +300,7 @@ fields:
       - First-class US mail: first_class_mail
       - Personal delivery / hand delivery: personal_delivery
       - Another way: other_delivery
-  - What is the other way you will serve the documents?: describe_other_delivery
+  - What is the other way you will serve the documents?: other_people_receiving_service[i].describe_other_delivery
     maxlength: 40
     show if:
       variable: other_people_receiving_service[i].method
@@ -499,10 +499,6 @@ review:
       % for item in other_people_receiving_service:
       * **${ item }**
       % endfor
-  - Edit: describe_other_delivery
-    button: |
-      Describe the other delivery method you mentioned:
-      **${ describe_other_delivery }**
 
   - Edit: divorcesc
     button: |
@@ -567,11 +563,12 @@ columns:
   - Address: |
       row_item.address if defined("row_item.address") else ""
   - How serving them: |
-      row_item.method if defined("row_item.method") else ""  
+      row_item.method if row_item.method in ["personal_delivery", "first_class_mail"] else row_item.describe_other_delivery if row_item.method == "other_delivery" else ""
 edit:
   - name.first
   - address
   - method
+  - describe_other_delivery
 confirm: True
 ---
 continue button field: users.revisit
@@ -610,11 +607,12 @@ columns:
   - Address: |
       row_item.address if defined("row_item.address") else ""
   - How serving them: |
-      row_item.method if defined("row_item.method") else ""  
+      row_item.method if row_item.method in ["personal_delivery", "first_class_mail"] else row_item.describe_other_delivery if row_item.method == "other_delivery" else ""
 edit:
   - name.first
   - address
   - method
+  - describe_other_delivery
 confirm: True
 
 ---
@@ -754,7 +752,8 @@ attachment:
       - "other_delivery": |
           ${ any(other.method == "other_delivery" for other in other_people_receiving_service) or any(other_party.method == "other_delivery" for other_party in other_parties) }
 
-      - "describe_other_delivery": ${ describe_other_delivery }
+      - "describe_other_delivery": |
+          ${ ", ".join([ other.describe_other_delivery for other in other_people_receiving_service if other.method == "other_delivery"] + [ other_party.describe_other_delivery for other_party in other_parties if other_party.method == "other_delivery"]) }
       
       - "person_getting_delivery": |
           ${ next((person.name for person in other_people_receiving_service if person.method == "personal_delivery"), next((party for party in other_parties if party.method == "personal_delivery"), None)) }
