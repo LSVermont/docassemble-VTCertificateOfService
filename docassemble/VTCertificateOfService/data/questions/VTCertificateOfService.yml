@@ -1,10 +1,9 @@
-#Note: This interview currently assumes the user is the plaintiff.
+#Note: This interview currently assumes the user is the plaintiff. For the stand-alone, we should probably ask and allow either side to fill it out.
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
-
 ---
 metadata:
   title: >-
@@ -23,7 +22,7 @@ metadata:
     https://vtlawhelp.org/roadmap/divorce/step-3
   help_page_title: >-
     Divorce Roadmap on VTLawHelp.org
-  typical_role: "plaintiff"
+  #typical_role: "plaintiff"
   al_weaver_version: "1.10.3"
   generated_on: "2024-02-22"
 ---
@@ -63,8 +62,9 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VTCertificateOfService
 code: |
-  user_role = "plaintiff"
+  #user_role = "plaintiff"
   user_ask_role = "plaintiff"
+  users1_role
   set_progress(5)
   other_parties.gather()
   set_progress(20)
@@ -151,6 +151,32 @@ fields:
         You cannot continue unless you agree to the terms of use.        
 continue button field: al_intro_screen
 ---
+id: users role
+question: |
+  Your role
+fields:
+  - "What is your role in this case?": users1_role
+    datatype: checkboxes
+    none of the above: False
+    minlength: 1
+    maxlength: 1
+    choices:
+    - "You are the \"Plaintiff,\" which means you started the case": role_plaintiff
+    - "You are the \"Defendant,\" which means you did not start the case but are named in the case": role_defendant
+    - "You have another role": role_other
+  - "Describe your role in a couple of words": other_role_description
+    maxlength: 28
+    js show if: |
+      val("users1_role") == "role_other"
+  - "Plaintiff in this case": case_plaintiff_name
+    maxlength: 28
+    js show if: |
+      val("users1_role") == "role_other"
+  - "Defendant in this case": case_defendant_name
+    maxlength: 28
+    js show if: |
+      val("users1_role") == "role_other"
+---
 comment: |
   This question is used to introduce your interview. Please customize
 id: Certificate_of_Service
@@ -203,9 +229,9 @@ fields:
     maxlength: 38
     show if: user_has_attorney
 ---
-id: how many other parties
+id: how many defendants
 question: |
-  The other party or parties
+  The defendant(s)
 fields:
   - How many defendants/other parties are in this case?: other_parties.target_number
     datatype: integer
@@ -277,9 +303,9 @@ question: |
   Number of other people you will serve
 subquestion: |
   % if other_parties.target_number > 1:
-  Besides the defendants, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
+  Besides the other parties, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
   % else:
-  Besides the defendants, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
+  Besides the other party, how many **other** people are you serving documents to? (Example: the other party's lawyer.)
   % endif
 fields: 
   - How many **other** people are you serving?: other_people_receiving_service.target_number
