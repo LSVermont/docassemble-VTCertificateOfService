@@ -1,4 +1,4 @@
-#Note: This interview currently assumes the user is the plaintiff. For the stand-alone, we should probably ask and allow either side to fill it out.
+#Note: For this stand-alone interview, either plaintiff or defendant can fill it out.
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -65,10 +65,9 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VTCertificateOfService
 code: |
-  #user_role = "plaintiff"
-  #user_ask_role
+  nav.set_section("about")
   users1_role
-  set_progress(5)
+  set_progress(10)
 
   other_parties.gather()
   set_progress(20)
@@ -79,6 +78,7 @@ code: |
   user_has_attorney
     
   set_progress(40)
+  nav.set_section("documents_served")
   docket_number
   trial_court_division
   set_progress(50)
@@ -89,8 +89,10 @@ code: |
   #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
   trial_court.address.county
   set_progress(80)
+  nav.set_section("review")
   VTCertificateOfService_preview_question
   set_progress(90)
+  nav.set_section("sign")
   al_form_requires_digital_signature = False
   basic_questions_signature_flow 
   interview_order_VTCertificateOfService = True
@@ -101,6 +103,7 @@ comment: |
   Delete mandatory: True to include in another interview
 mandatory: True
 code: |
+  nav.set_section("intro")
   al_intro_screen
   VTCertificateOfService_intro
   interview_order_VTCertificateOfService
@@ -113,6 +116,7 @@ code: |
       },
   )
   set_progress(100)
+  nav.set_section("get_docs")
   VTCertificateOfService_download
 ---
 sections:
@@ -161,26 +165,10 @@ question: |
   Your role
 fields:
   - "What is your role in this case?": users1_role
-    datatype: checkboxes
-    none of the above: False
-    minlength: 1
-    maxlength: 1
+    input type: radio
     choices:
-    - "You are the \"Plaintiff,\" which means you started the case": role_plaintiff
-    - "You are the \"Defendant,\" which means you did not start the case but are responding to it": role_defendant
-    - "You have another role": role_other
-  - "Describe your role in a couple of words": other_role_description
-    maxlength: 28
-    js show if: |
-      val("users1_role") == "role_other"
-  - "Plaintiff in this case": case_plaintiff_name
-    maxlength: 28
-    js show if: |
-      val("users1_role") == "role_other"
-  - "Defendant in this case": case_defendant_name
-    maxlength: 28
-    js show if: |
-      val("users1_role") == "role_other"
+    - You are the 'Plaintiff,' which means you started the case: role_plaintiff
+    - You are the 'Defendant,' which means you did not start the case but are responding to it: role_defendant
 ---
 comment: |
   This question is used to introduce your interview. Please customize
@@ -205,7 +193,7 @@ question: |
   Choose a court
 fields:
   - note: |
-      Choose the court division and the county court where you will file your forms. 
+      Choose the court division and the county court where you will file your form. 
       
       If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
       
@@ -237,10 +225,16 @@ fields:
 id: how many other parties
 question: |
   The other party
-subquestion: |
-  How many defendants are in this case? How many plaintiffs are in this case?
 fields:  
-  - "How many": other_parties.target_number
+  - note: |
+      % if defined("users1_role") and users1_role == "role_plaintiff":
+      How many defendants are in this case? 
+      % endif
+      % if defined("users1_role") and users1_role == "role_defendant":
+      How many plaintiffs are in this case?
+      % endif
+    
+  - "How many?": other_parties.target_number
     datatype: integer    
 ---  
 id: gather other parties info
@@ -756,7 +750,16 @@ progress: 100
 # ALDocument objects specify the metadata for each template
 objects:
   - VTCertificateOfService_Post_interview_instructions: ALDocument.using(title="Instructions", filename="VTCertificateOfService_next_steps.docx", enabled=True, has_addendum=False)
-  - VTCertificateOfService_attachment: ALDocument.using(title="Certificate of Service", filename="VTCertificateOfService", enabled=True, has_addendum=False, )
+  - VTCertificateOfService_attachment: ALDocument.using(title="Certificate of Service", filename="VTCertificateOfService", enabled=True, has_addendum=True, )
+---
+code: |
+  VTCertificateOfService_attachment.overflow_fields['documents_list'].overflow_trigger = 1200
+  VTCertificateOfService_attachment.overflow_fields['documents_list'].label = "More documents served"
+  VTCertificateOfService_attachment.overflow_fields.gathered = True 
+---
+attachment:
+  variable name: VTCertificateOfService_attachment.addendum
+  docx template file: VTCertificateOfService_addendum.docx
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
@@ -794,19 +797,19 @@ attachment:
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${(trial_court.address.county)}
       - "users1_name": |
-          % if users1_role["role_plaintiff"]:
+          % if defined("users1_role") and users1_role == "role_plaintiff":
           ${ users[0] }
           % endif
-          % if users1_role["role_defendant"]:
-          ${ other_parties[0] }
+          % if defined("users1_role") and users1_role == "role_defendant":
+          ${ other_parties.short_list(2) }
           % endif
       - "VS": "v."
       - "other_parties1_name": |
-          % if users1_role["role_defendant"]:
+          % if defined("users1_role") and users1_role == "role_defendant":
           ${ users[0] }
           % endif
-          % if users1_role["role_plaintiff"]:
-          ${ other_parties[0] }
+          % if defined("users1_role") and users1_role == "role_plaintiff":
+          ${ other_parties.short_list(2) }
           % endif
 
       - "documents_list": |
