@@ -4,7 +4,9 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
-
+---
+modules:
+  - docassemble.demo.accordion
 ---
 metadata:
   title: >-
@@ -166,9 +168,8 @@ subquestion: |
   
   * For civil court cases: [Read about serving papers on landlord-tenant cases](https://www.vermontjudiciary.org/civil/landlord-tenant) and [small claims cases](https://www.vermontjudiciary.org/civil/suing-and-being-sued) and [other civil cases](https://www.vermontjudiciary.org/civil).
   
-  
-  
-  
+  * If you are not sure, ask the [clerk at your local court.](https://www.vermontjudiciary.org/court-locations)
+
 ---
 id: choose a court
 question: |
@@ -315,14 +316,13 @@ fields:
 id: documents serving to other party
 question: |
   Documents you are serving to the other party
-fields:
-  - note: |
-      Here are some popular court documents. Choose all that apply.
+subquestion: |
+  Here are some popular court documents. Choose all that you want to appear on the Certificate of Service form.
       
-      On the next screen, you can add more to the list of documents that will appear on the form.
-      
-  - note: |
-      **Family law cases**
+  On the next screen, you can add more to the list.
+fields:      
+  - raw html: |
+      ${ start_accordion('Common family court documents') }
   - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836: divorcesc
     datatype: yesno
     required: False
@@ -338,8 +338,27 @@ fields:
   - Divorce / Dissolution stipulation (agreement): divorcestip
     datatype: yesno
     required: False
-  - note: |
-      **Civil law cases**
+  - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803: modchildsup
+    datatype: yesno
+    required: False
+  - Motion to Enforce Child Support and/or Maintenance Supplement - form 400-00823: enfchildsup 
+    datatype: yesno
+    required: False    
+  - Motion to Modify Parental Rights & Responsibilities & Parent Child Contact - form 400-00843: modprr
+    datatype: yesno
+    required: False    
+  - Motion to Enforce - form 400-00905: motionenforce
+    datatype: yesno
+    required: False    
+  - Affidavit - Family Division - form 400-00804: familyaffidavit
+    datatype: yesno
+    required: False   
+  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver
+    datatype: yesno
+    required: False
+   
+  - raw html: |
+      ${ next_accordion('Common civil court documents') }
   - Small Claims Complaint – form 100-00257: smallclaimssc
     datatype: yesno
     required: False
@@ -352,13 +371,36 @@ fields:
   - Counterclaims: counterclaims
     datatype: yesno
     required: False
-  - note: |
-      **Probate law cases** 
-  - note: |
-      **Other** 
-  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver
+  - Motion - Civil Court - form 100-00053: civilmotion
+    datatype: yesno
+    required: False   
+  - Response to Motion - Civil Court - form 100-00020: civilrespmotion
+    datatype: yesno
+    required: False  
+  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver2
     datatype: yesno
     required: False
+
+  - raw html: |
+      ${ next_accordion('Common probate court documents') }
+  - Petition to Open Small Estate - form 700-00001SM: probpetsmest
+    datatype: yesno
+    required: False  
+  - Petition to Open Decedent's Estate - form 700-00001: probpetopenest
+    datatype: yesno
+    required: False  
+  - List of Interested Persons for Estates - form 700-00002E: probintpersons
+    datatype: yesno
+    required: False     
+  - Motion for License to Sell or Convey Real Estate - form 700-00035: problicsellre
+    datatype: yesno
+    required: False  
+  - Application to Waive Filing Fees and Service Costs - form 600-00228: feewaiver3
+    datatype: yesno
+    required: False
+  - raw html: |
+      ${ end_accordion() }  
+
 ---
 id: other documents serving to other party
 question: |
@@ -510,21 +552,49 @@ review:
     button: |
 
       Documents you are serving to the other party:
+      
+      % if defined("divorcesc") and divorcesc == True:
+      - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+      % endif
+      
+      % if defined("divorcesckids"):
+      - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
+      % endif
+      
+      % if defined("noa") and noa == True:
+      - Notice of Appearance for Self-Represented Party - form 400-00831
+      % endif
+      
+      % if defined("faminfo") and faminfo == True:
+      - Family Court Information Sheet - form 800
+      % endif
+      
+      % if defined("divorcestip") and divorcestip == True:
+      - Divorce / Dissolution stipulation (agreement)
+      % endif
 
-      % if divorcesc:
-        * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+      % if defined("modchildsup") and modchildsup == True:
+      - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803
       % endif
-      % if divorcesckids:
-        * Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
+      
+      % if defined("enfchildsup") and enfchildsup == True:
+      - Motion to Enforce Child Support and/or Maintenance Supplement - form 400-00823
       % endif
-      % if noa:
-        * Notice of Appearance for Self-Represented Party - form 400-00831
+      
+      % if defined("modprr") and modprr == True:
+      - Motion to Modify Parental Rights & Responsibilities & Parent Child Contact - form 400-00843
       % endif
-      % if faminfo:
-        * Family Court Information Sheet - form 800
+      
+      % if defined("motionenforce") and motionenforce == True:
+      - Motion to Enforce - form 400-00905
       % endif
-      % if divorcestip:
-        * Divorce / Dissolution stipulation (agreement)
+      
+      % if defined("familyaffidavit") and familyaffidavit == True:
+      - Affidavit - Family Division - form 400-00804
+      % endif
+      
+      % if defined("feewaiver") and feewaiver == True:
+      - Application to Waive Filing Fees and Service Costs - form 600-00228
       % endif
 
   - Edit: document1_name
@@ -689,34 +759,39 @@ attachment:
           ${ other_parties.short_list(2) }
 
       - "documents_list": |
-          % if divorcesc:
+          % if defined("divorcesc") and divorcesc == True:
           - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
           % endif
-          % if divorcesckids:
+          % if defined("divorcesckids") and divorcesckids == True:
           - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
           % endif
-          % if noa:
+          % if defined("noa") and noa == True:
           - Notice of Appearance for Self-Represented Party - form 400-00831
           % endif
-          % if faminfo:
+          % if defined("faminfo") and faminfo == True:
           - Family Court Information Sheet - form 800
           % endif
-          % if divorcestip:
+          % if defined("divorcestip") and divorcestip == True:
           - Divorce / Dissolution stipulation (agreement)
           % endif
-          % if document1_name != '':
-          - ${ showifdef("document1_name") }
+          % if defined("modchildsup") and modchildsup == True:
+          - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803
           % endif
-          % if document2_name != '':
-          - ${ showifdef("document2_name") }
+          % if defined("enfchildsup") and enfchildsup == True:
+          - Motion to Enforce Child Support and/or Maintenance Supplement - form 400-00823
           % endif
-          % if document3_name != '':
-          - ${ showifdef("document3_name") }
+          % if defined("modprr") and modprr == True:
+          - Motion to Modify Parental Rights & Responsibilities & Parent Child Contact - form 400-00843
           % endif
-          % if document4_name != '':
-          - ${ showifdef("document4_name") }
+          % if defined("motionenforce") and motionenforce == True:
+          - Motion to Enforce - form 400-00905
           % endif
-
+          % if defined("familyaffidavit") and familyaffidavit == True:
+          - Affidavit - Family Division - form 400-00804
+          % endif
+          % if defined("feewaiver") and feewaiver == True:
+          - Application to Waive Filing Fees and Service Costs - form 600-00228
+          % endif
 
       - "people_receiving_service_list": |
           % if other_parties[0].served == True:
