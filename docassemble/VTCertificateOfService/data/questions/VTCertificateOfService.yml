@@ -1,4 +1,4 @@
-#Note: This interview currently assumes the user is the plaintiff. For the stand-alone, we should probably ask and allow either side to fill it out.
+#Note: For this stand-alone interview, we should ask and allow either plaintiff or defendant to fill it out.
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -65,10 +65,9 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VTCertificateOfService
 code: |
-  #user_role = "plaintiff"
-  #user_ask_role
+
   users1_role
-  set_progress(5)
+  set_progress(10)
 
   other_parties.gather()
   set_progress(20)
@@ -161,26 +160,10 @@ question: |
   Your role
 fields:
   - "What is your role in this case?": users1_role
-    datatype: checkboxes
-    none of the above: False
-    minlength: 1
-    maxlength: 1
+    input type: radio
     choices:
-    - "You are the \"Plaintiff,\" which means you started the case": role_plaintiff
-    - "You are the \"Defendant,\" which means you did not start the case but are responding to it": role_defendant
-    - "You have another role": role_other
-  - "Describe your role in a couple of words": other_role_description
-    maxlength: 28
-    js show if: |
-      val("users1_role") == "role_other"
-  - "Plaintiff in this case": case_plaintiff_name
-    maxlength: 28
-    js show if: |
-      val("users1_role") == "role_other"
-  - "Defendant in this case": case_defendant_name
-    maxlength: 28
-    js show if: |
-      val("users1_role") == "role_other"
+    - You are the 'Plaintiff,' which means you started the case: role_plaintiff
+    - You are the 'Defendant,' which means you did not start the case but are responding to it: role_defendant
 ---
 comment: |
   This question is used to introduce your interview. Please customize
@@ -205,7 +188,7 @@ question: |
   Choose a court
 fields:
   - note: |
-      Choose the court division and the county court where you will file your forms. 
+      Choose the court division and the county court where you will file your form. 
       
       If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
       
@@ -237,10 +220,16 @@ fields:
 id: how many other parties
 question: |
   The other party
-subquestion: |
-  How many defendants are in this case? How many plaintiffs are in this case?
 fields:  
-  - "How many": other_parties.target_number
+  - note: |
+      % if defined("users1_role") and users1_role == "role_plaintiff":
+      How many defendants are in this case? 
+      % endif
+      % if defined("users1_role") and users1_role == "role_defendant":
+      How many plaintiffs are in this case?
+      % endif
+    
+  - "How many?": other_parties.target_number
     datatype: integer    
 ---  
 id: gather other parties info
@@ -794,18 +783,18 @@ attachment:
       - "docket_number": ${ docket_number }
       - "trial_court_county": ${(trial_court.address.county)}
       - "users1_name": |
-          % if users1_role["role_plaintiff"]:
+          % if defined("users1_role") and users1_role == "role_plaintiff":
           ${ users[0] }
           % endif
-          % if users1_role["role_defendant"]:
+          % if defined("users1_role") and users1_role == "role_defendant":
           ${ other_parties[0] }
           % endif
       - "VS": "v."
       - "other_parties1_name": |
-          % if users1_role["role_defendant"]:
+          % if defined("users1_role") and users1_role == "role_defendant":
           ${ users[0] }
           % endif
-          % if users1_role["role_plaintiff"]:
+          % if defined("users1_role") and users1_role == "role_plaintiff":
           ${ other_parties[0] }
           % endif
 
