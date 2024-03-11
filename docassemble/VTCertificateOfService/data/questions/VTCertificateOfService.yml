@@ -1,4 +1,4 @@
-#Note: For this stand-alone interview, we should ask and allow either plaintiff or defendant to fill it out.
+#Note: For this stand-alone interview, either plaintiff or defendant can fill it out.
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -745,7 +745,16 @@ progress: 100
 # ALDocument objects specify the metadata for each template
 objects:
   - VTCertificateOfService_Post_interview_instructions: ALDocument.using(title="Instructions", filename="VTCertificateOfService_next_steps.docx", enabled=True, has_addendum=False)
-  - VTCertificateOfService_attachment: ALDocument.using(title="Certificate of Service", filename="VTCertificateOfService", enabled=True, has_addendum=False, )
+  - VTCertificateOfService_attachment: ALDocument.using(title="Certificate of Service", filename="VTCertificateOfService", enabled=True, has_addendum=True, )
+---
+code: |
+  VTCertificateOfService_attachment.overflow_fields['documents_list'].overflow_trigger = 1200
+  VTCertificateOfService_attachment.overflow_fields['documents_list'].label = "More documents served"
+  VTCertificateOfService_attachment.overflow_fields.gathered = True 
+---
+attachment:
+  variable name: VTCertificateOfService_attachment.addendum
+  docx template file: VTCertificateOfService_addendum.docx
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
@@ -787,7 +796,7 @@ attachment:
           ${ users[0] }
           % endif
           % if defined("users1_role") and users1_role == "role_defendant":
-          ${ other_parties[0] }
+          ${ other_parties.short_list(2) }
           % endif
       - "VS": "v."
       - "other_parties1_name": |
@@ -795,7 +804,7 @@ attachment:
           ${ users[0] }
           % endif
           % if defined("users1_role") and users1_role == "role_plaintiff":
-          ${ other_parties[0] }
+          ${ other_parties.short_list(2) }
           % endif
 
       - "documents_list": |
