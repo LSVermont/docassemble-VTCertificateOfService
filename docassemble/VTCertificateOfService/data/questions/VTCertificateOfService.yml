@@ -549,23 +549,27 @@ review:
     button: |
 
       Documents you are serving to the other party:
-
-      % if divorcesc:
-        * Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
+      
+      % if defined("divorcesc") and divorcesc == True:
+      - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
       % endif
-      % if divorcesckids:
-        * Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
+      
+      % if defined("divorcesckids"):
+      - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
       % endif
-      % if noa:
-        * Notice of Appearance for Self-Represented Party - form 400-00831
+      
+      % if defined("noa") and noa == True:
+      - Notice of Appearance for Self-Represented Party - form 400-00831
       % endif
-      % if faminfo:
-        * Family Court Information Sheet - form 800
+      
+      % if defined("faminfo") and faminfo == True:
+      - Family Court Information Sheet - form 800
       % endif
-      % if divorcestip:
-        * Divorce / Dissolution stipulation (agreement)
+      
+      % if defined("divorcestip") and divorcestip == True:
+      - Divorce / Dissolution stipulation (agreement)
       % endif
-
+      
   - Edit: document1_name
     button: |
       Other documents you are serving:
@@ -728,33 +732,33 @@ attachment:
           ${ other_parties.short_list(2) }
 
       - "documents_list": |
-          % if divorcesc:
-          - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836"
+          % if defined("divorcesc") and divorcesc == True:
+          - Summons and Complaint for Divorce/Separation/Dissolution without Children - form 400-00836
           % endif
-          % if divorcesckids:
+          % if defined("divorcesckids") and divorcesckids == True:
           - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
           % endif
-          % if noa:
-          - Notice of Appearance for Self-Represented Party - form 400-00831
-          % endif
-          % if faminfo:
-          - Family Court Information Sheet - form 800
-          % endif
-          % if divorcestip:
-          - Divorce / Dissolution stipulation (agreement)
-          % endif
-          % if document1_name != '':
-          - ${ showifdef("document1_name") }
-          % endif
-          % if document2_name != '':
-          - ${ showifdef("document2_name") }
-          % endif
-          % if document3_name != '':
-          - ${ showifdef("document3_name") }
-          % endif
-          % if document4_name != '':
-          - ${ showifdef("document4_name") }
-          % endif
+#          % if defined("noa"):
+#          - Notice of Appearance for Self-Represented Party - form 400-00831
+#          % endif
+#          % if defined("faminfo"):
+#          - Family Court Information Sheet - form 800
+#          % endif
+#          % if divorcestip:
+#          - Divorce / Dissolution stipulation (agreement)
+#          % endif
+#          % if document1_name != '':
+#          - ${ showifdef("document1_name") }
+#          % endif
+#          % if document2_name != '':
+#          - ${ showifdef("document2_name") }
+#          % endif
+#          % if document3_name != '':
+#          - ${ showifdef("document3_name") }
+#          % endif
+#          % if document4_name != '':
+#          - ${ showifdef("document4_name") }
+#          % endif
 
 
       - "people_receiving_service_list": |
