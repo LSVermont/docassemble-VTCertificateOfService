@@ -65,7 +65,7 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_VTCertificateOfService
 code: |
-
+  nav.set_section("about")
   users1_role
   set_progress(10)
 
@@ -78,6 +78,7 @@ code: |
   user_has_attorney
     
   set_progress(40)
+  nav.set_section("documents_served")
   docket_number
   trial_court_division
   set_progress(50)
@@ -88,8 +89,10 @@ code: |
   #Needed to add trial court county below so it would be defined before previewing forms. The index had been defined but not the county.
   trial_court.address.county
   set_progress(80)
+  nav.set_section("review")
   VTCertificateOfService_preview_question
   set_progress(90)
+  nav.set_section("sign")
   al_form_requires_digital_signature = False
   basic_questions_signature_flow 
   interview_order_VTCertificateOfService = True
@@ -100,6 +103,7 @@ comment: |
   Delete mandatory: True to include in another interview
 mandatory: True
 code: |
+  nav.set_section("intro")
   al_intro_screen
   VTCertificateOfService_intro
   interview_order_VTCertificateOfService
@@ -112,6 +116,7 @@ code: |
       },
   )
   set_progress(100)
+  nav.set_section("get_docs")
   VTCertificateOfService_download
 ---
 sections:
