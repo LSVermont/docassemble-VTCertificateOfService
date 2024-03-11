@@ -335,6 +335,9 @@ fields:
   - Family Court Information Sheet - form 800: faminfo
     datatype: yesno
     required: False
+  - Divorce / Dissolution stipulation (agreement): divorcestip
+    datatype: yesno
+    required: False
   - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803: modchildsup
     datatype: yesno
     required: False
@@ -569,7 +572,31 @@ review:
       % if defined("divorcestip") and divorcestip == True:
       - Divorce / Dissolution stipulation (agreement)
       % endif
+
+      % if defined("modchildsup") and modchildsup == True:
+      - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803
+      % endif
       
+      % if defined("enfchildsup") and enfchildsup == True:
+      - Motion to Enforce Child Support and/or Maintenance Supplement - form 400-00823
+      % endif
+      
+      % if defined("modprr") and modprr == True:
+      - Motion to Modify Parental Rights & Responsibilities & Parent Child Contact - form 400-00843
+      % endif
+      
+      % if defined("motionenforce") and motionenforce == True:
+      - Motion to Enforce - form 400-00905
+      % endif
+      
+      % if defined("familyaffidavit") and familyaffidavit == True:
+      - Affidavit - Family Division - form 400-00804
+      % endif
+      
+      % if defined("feewaiver") and feewaiver == True:
+      - Application to Waive Filing Fees and Service Costs - form 600-00228
+      % endif
+
   - Edit: document1_name
     button: |
       Other documents you are serving:
@@ -738,28 +765,33 @@ attachment:
           % if defined("divorcesckids") and divorcesckids == True:
           - Summons and Complaint for Divorce/Separation/Dissolution with Children - form 400-00836
           % endif
-#          % if defined("noa"):
-#          - Notice of Appearance for Self-Represented Party - form 400-00831
-#          % endif
-#          % if defined("faminfo"):
-#          - Family Court Information Sheet - form 800
-#          % endif
-#          % if divorcestip:
-#          - Divorce / Dissolution stipulation (agreement)
-#          % endif
-#          % if document1_name != '':
-#          - ${ showifdef("document1_name") }
-#          % endif
-#          % if document2_name != '':
-#          - ${ showifdef("document2_name") }
-#          % endif
-#          % if document3_name != '':
-#          - ${ showifdef("document3_name") }
-#          % endif
-#          % if document4_name != '':
-#          - ${ showifdef("document4_name") }
-#          % endif
-
+          % if defined("noa") and noa == True:
+          - Notice of Appearance for Self-Represented Party - form 400-00831
+          % endif
+          % if defined("faminfo") and faminfo == True:
+          - Family Court Information Sheet - form 800
+          % endif
+          % if defined("divorcestip") and divorcestip == True:
+          - Divorce / Dissolution stipulation (agreement)
+          % endif
+          % if defined("modchildsup") and modchildsup == True:
+          - Motion to Modify Child Support and/or Maintenance Supplement - form 400-00803
+          % endif
+          % if defined("enfchildsup") and enfchildsup == True:
+          - Motion to Enforce Child Support and/or Maintenance Supplement - form 400-00823
+          % endif
+          % if defined("modprr") and modprr == True:
+          - Motion to Modify Parental Rights & Responsibilities & Parent Child Contact - form 400-00843
+          % endif
+          % if defined("motionenforce") and motionenforce == True:
+          - Motion to Enforce - form 400-00905
+          % endif
+          % if defined("familyaffidavit") and familyaffidavit == True:
+          - Affidavit - Family Division - form 400-00804
+          % endif
+          % if defined("feewaiver") and feewaiver == True:
+          - Application to Waive Filing Fees and Service Costs - form 600-00228
+          % endif
 
       - "people_receiving_service_list": |
           % if other_parties[0].served == True:
